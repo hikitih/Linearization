@@ -67,7 +67,7 @@ public class GraphSaveLoad{
 					int count = scan2.nextInt();
 					if (count>0) {
 						g = new Graph(count);
-						System.out.println("Creating new graph with "+count+" vertices");
+						//System.out.println("Creating new graph with "+count+" vertices");
 					}
 				} else {
 					v1 = scan2.hasNextInt() ? scan2.nextInt() : -2;
@@ -76,7 +76,7 @@ public class GraphSaveLoad{
 					if ( v1>-1 && v2>-1 ){
 						g.addEdge(v1,v2,weight);
 					}
-					System.out.println("Adding edge from "+v1+" to "+v2);
+					//System.out.println("Adding edge from "+v1+" to "+v2);
 				}
 				counter++;
 			}

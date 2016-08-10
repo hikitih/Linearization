@@ -62,8 +62,6 @@ public class Evolution{
 		
 		//get children
 		for (int step=0; step<numberOfSteps; step++){
-			System.out.println("STEP "+step+". Parents "+parents.size()
-						+". Children "+numberOfChildren*parents.size());
 			currTime = System.currentTimeMillis();
 			unsortedChildren.clear();
 			//System.out.println("Get children");
@@ -84,11 +82,14 @@ public class Evolution{
 			//System.out.println(System.currentTimeMillis()-currTime);
 			children.clear();
 			children.addAll(unsortedChildren);
+			System.out.println("STEP "+step+". Parents "+parents.size()
+						+". Children "+children.size());
 			parents.clear();
 
 			int counter = 1;
 			for (Permutation childo: children){
 				parents.add(childo);
+				//childo.viewPermutation();
 				counter++;
 				if (counter>numberOfParents) {break;}
 			}
