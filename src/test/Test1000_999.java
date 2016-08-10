@@ -7,11 +7,11 @@ public class Test1000_999 {
 	public static void main(String[] args){
 		long startTime = System.currentTimeMillis();
 		long currTime = System.currentTimeMillis();
-		int n = 15000000;//up to 18M works. at 20M fails to add 11M edges
+		int n = 18000000;//up to 18M works. at 20M fails to add 11M edges
 
 		System.out.println("Starting the construction of the graph...");
 
-		Graph g = new Graph(n);
+		Graph g = new Graph(n,n);
 
 		System.out.println("Time elapsed: "+(System.currentTimeMillis()-startTime));
 		System.out.println("Adding edges...");
@@ -29,8 +29,6 @@ public class Test1000_999 {
 		System.out.println();
 
 		System.out.println("Vertices in graph: "+n);
-
-		//g.compactify();
 
 		/*
 		System.out.println("Start evolution");	

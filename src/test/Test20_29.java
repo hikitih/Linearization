@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Test20_29 {
 
 	public static void main(String[] args){
-		Graph g = new Graph(20);
+		Graph g = new Graph(20,29);
 	
 		g.addEdge(0,1);
 		g.addEdge(0,2);
@@ -76,7 +76,7 @@ public class Test20_29 {
 		sorted.setCutwidth(g.cutwidth(sorted.getPermutation()));
 		sorted.viewPermutation();		
 
-		//g.info();
+		g.info();
 		g.sorting();
 		g.outputSorting();
 	}

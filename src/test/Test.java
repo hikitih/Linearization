@@ -3,13 +3,13 @@ package test;
 import graph.*;
 import java.util.ArrayList;
 
-public class Test_from_paper {
+public class Test {
 
 	public static void main(String[] args){
-		Graph g = new Graph(13,true);
+		Graph g = new Graph(13);
 		Permutation p = new Permutation();	
 
-		g.addEdge(1,2,9);
+		g.addEdge(199,2,9);
 		g.addEdge(2,3,7);
 		g.addEdge(3,4,8);
 		g.addEdge(4,5,7);
@@ -20,7 +20,7 @@ public class Test_from_paper {
 		g.addEdge(8,7,1);
 		g.addEdge(7,9,1);
 		g.addEdge(8,9,2);
-		g.addEdge(1,10,2);
+		g.addEdge(199,10,2);
 		g.addEdge(11,0,2);
 		g.addEdge(10,11,1);
 		g.addEdge(10,12,1);
@@ -32,7 +32,9 @@ public class Test_from_paper {
 
 
 		g.info();
+		
 
+		/*
 		ArrayList<Integer> permutation = new ArrayList<>();
 		System.out.println("\nOrder from paper: ");
 		permutation.add(1);
@@ -171,7 +173,7 @@ public class Test_from_paper {
 
 		//Evolution
 		
-		Evolution evolution = new Evolution(g,200);
+		Evolution evolution = new Evolution(g,100);
 		Permutation permutation1 = new Permutation();
 		
 		permutation1 = evolution.evolute(g,1000,10);
@@ -183,11 +185,12 @@ public class Test_from_paper {
 		System.out.println("<--- "+RtoL);
 		int LtoR = g.leftToRight(permutation1.getPermutation());
 		System.out.println("---> "+LtoR);
+		*/
+
 		
-
-
 		System.out.println("\nSorting with number of reversing edges: ");
-		g.sorting();
+		g.sorting(true);
 		g.outputSorting();
+		
 	}
 }

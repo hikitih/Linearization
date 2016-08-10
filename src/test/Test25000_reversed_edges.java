@@ -7,8 +7,8 @@ public class Test25000_reversed_edges {
 	public static void main(String[] args){
 		long startTime = System.currentTimeMillis();
 		long currTime = System.currentTimeMillis();
-		int n = 2000000;//
-		boolean newStyle = false;
+		int n = 400000;//
+		boolean withoutSinks = false;
 
 		System.out.println("Starting the construction of the graph...");
 
@@ -33,11 +33,7 @@ public class Test25000_reversed_edges {
 			if (i!=n-1) {g.addEdge(n-1,i);}
 		}
 		
-
-
 		System.out.println("Vertices in graph: "+n);
-
-		//g.compactify();
 
 		/*
 		System.out.println("Start evolution");	
@@ -55,10 +51,10 @@ public class Test25000_reversed_edges {
 
 		//g.info();
 		System.out.println("Time to construct the graph: "+(System.currentTimeMillis()-startTime)/1000);
-		System.out.println("New style: "+newStyle);
+		System.out.println("With sinks: "+!withoutSinks);
 		currTime = System.currentTimeMillis();
 		
-		g.sorting(newStyle);
+		g.sorting(withoutSinks);
 		
 		System.out.println("Time to sort(sec): "+(System.currentTimeMillis()-currTime)/1000);
 		System.out.println(g.getNumberOfReversingEdges());
