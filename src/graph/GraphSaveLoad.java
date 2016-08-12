@@ -1,19 +1,22 @@
 package graph;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 import graph.Graph.*;
 
 public class GraphSaveLoad{
-	public static Graph loadGraph(String filename, Graph g){
+	public static Graph loadGraph(String filename){
+		Graph g = null;
 		try(FileReader fr = new FileReader(System.getProperty("user.dir")
-				+"/src/graph/"+filename);
+				+"/src/test/"+filename);
 			Scanner scan = new Scanner(fr)){
-			
+
 			int count = -1;
 			int v1 = -1;
 			int v2 = -1;
 			int counter = 0;
+
 			while(scan.hasNext()){
 				if (scan.hasNextInt()) {
 					if (counter==0){
@@ -30,6 +33,7 @@ public class GraphSaveLoad{
 							if (v2==-1) {
 								v1 = -1;
 							} else {
+								assert g != null;
 								g.addEdge(v1,v2);
 								//System.out.println("Adding edge from "+v1+" to "+v2);
 								v1 = v2;
@@ -40,10 +44,109 @@ public class GraphSaveLoad{
 				}
 				counter++;
 			}
-		} catch (FileNotFoundException e){
-			System.out.println(e);
 		} catch (IOException e){
-			System.out.println(e);
+			e.printStackTrace();
+		}
+		return g;
+	}
+
+	public static Graph loadGFA(String filename){
+		Graph g = null;
+		try(FileReader fr = new FileReader(System.getProperty("user.dir")
+				+"/src/test/"+filename);
+			Scanner scan = new Scanner(fr)){
+
+			int v1;
+			int v2;
+			char c1;
+			char c2;
+			int counter = 0;
+			while(scan.hasNextLine()){
+				String s = scan.nextLine();
+				Scanner scan2 = new Scanner(s).useDelimiter("\\t");
+				if (counter==0){
+					g = new Graph();
+				} else {
+					if (s.startsWith("L")) {
+						v1 = Integer.parseInt(scan2.findInLine("\\d+"));
+						c1 = scan2.findInLine("[+-]").charAt(0);
+						v2 = Integer.parseInt(scan2.findInLine("\\d+"));
+						c2 = scan2.findInLine("[+-]").charAt(0);
+						if (c1==c2) {
+							if (c1=='+') {
+								g.addEdge(v1, v2);
+								//System.out.println("Adding edge from "+v1+" to "+v2);
+							} else {
+								g.addEdge(v2, v1);
+								//System.out.println("Adding edge from "+v2+" to "+v1);
+							}
+						}
+						//g.addEdge(v1,v2);
+						//System.out.println("Adding edge from "+v1+" to "+v2);
+					}
+				}
+				counter++;
+			}
+		}  catch (IOException e){
+			e.printStackTrace();
+		}
+		return g;
+	}
+
+	public static ArrayList<Integer> loadSortedGFA(String filename){
+		ArrayList<Integer> sorted = new ArrayList<>();
+		try(FileReader fr = new FileReader(System.getProperty("user.dir")
+				+"/src/test/"+filename);
+			Scanner scan = new Scanner(fr)){
+
+			int v;
+			while(scan.hasNextLine()){
+				String s = scan.nextLine();
+				Scanner scan2 = new Scanner(s).useDelimiter("\\t");
+				if (s.startsWith("S")) {
+					v = Integer.parseInt(scan2.findInLine("\\d+"));
+					sorted.add(v);
+				}
+			}
+		}  catch (IOException e){
+			e.printStackTrace();
+		}
+		return sorted;
+	}
+
+	public static Graph loadWeightedGraph(String filename){
+		Graph g = null;
+		try(FileReader fr = new FileReader(System.getProperty("user.dir")
+				+"/src/test/"+filename);
+			Scanner scan = new Scanner(fr)){
+			
+			int v1 = -1;
+			int v2 = -1;
+			int weight = -1;
+			int counter = 0;
+			while(scan.hasNextLine()){
+				String s = scan.nextLine();
+				Scanner scan2 = new Scanner(s);
+				if (counter==0){
+					int count = scan2.nextInt();
+					if (count>0) {
+						g = new Graph(count);
+						//System.out.println("Creating new graph with "+count+" vertices");
+					}
+				} else {
+					v1 = scan2.hasNextInt() ? scan2.nextInt() : -2;
+					v2 = scan2.hasNextInt() ? scan2.nextInt() : -2;
+					weight = scan2.hasNextInt() ? scan2.nextInt() : -2;
+					if ( v1>-1 && v2>-1 ){
+						assert g != null;
+						g.addEdge(v1,v2,weight);
+					}
+					//System.out.println("Adding edge from "+v1+" to "+v2);
+				}
+				counter++;
+			}
+		}  catch (IOException e){
+			e.printStackTrace();
 		}		
 		return g;
 	}
@@ -52,7 +155,7 @@ public class GraphSaveLoad{
 		String lineSeparator = System.getProperty("line.separator");
 		try(BufferedWriter bw = new BufferedWriter(
 				new FileWriter(System.getProperty("user.dir")
-				+"/src/graph/"+filename));
+				+"/src/test/"+filename));
 			PrintWriter pw = new PrintWriter(bw)){
 			
 			if (isFirstFile) {
@@ -60,22 +163,44 @@ public class GraphSaveLoad{
 			} else {
 				pw.println(-1);
 			}
-			String s="";
-			for (Vertex v: g.vertices){
-				for (int i: v.outEdges) {
-					s = v.id + " " + i + " -1";
-					pw.println(s);
-				}
-				pw.flush();
+			String s;
+			for (Edge edge: Edges.edges.values()){
+				s = edge.out + " " + edge.in + " " + edge.weight + " -1";
+				pw.println(s);
 			}
 			return true;
-		} catch (FileNotFoundException e){
-			System.out.println(e);
-			return false;
-		} catch (IOException e)	{
-			System.out.println(e);
+		}  catch (IOException e)	{
+			e.printStackTrace();
 			return false;
 		} 		
 	}
 
+	public static boolean saveSorting (String filename, ArrayList<Integer> sorting){
+		try(BufferedWriter bw = new BufferedWriter(
+				new FileWriter(System.getProperty("user.dir")
+						+"/src/test/"+filename));
+			PrintWriter pw = new PrintWriter(bw)){
+
+			String s="Sorted: ";
+			int inLine = 0;
+			int lines = 0;
+			for (int vertex_number: sorting){
+				s = s + vertex_number + "\t";
+				inLine++;
+				if (inLine>1000){
+					pw.println(s);
+					s = "";
+					inLine = 0;
+					lines++;
+				}
+				if (lines % 10 == 0){
+					pw.flush();
+				}
+			}
+			return true;
+		}  catch (IOException e)	{
+			e.printStackTrace();
+			return false;
+		}
+	}
 }

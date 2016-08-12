@@ -6,18 +6,21 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Date;
 import java.util.Random;
+import java.util.Iterator;
 
 public class Evolution{
-	Date date = new Date();
-	Random random = new Random(date.getTime());
-	ArrayList<Permutation> parents;
+	private Date date = new Date();
+	private Random random = new Random(date.getTime());
+	private ArrayList<Permutation> parents;
 
 	public Evolution(Graph g, int startNumberOfPermutations){
 		int length = g.getCount();
-		parents = new ArrayList<Permutation>(startNumberOfPermutations);
+		parents = new ArrayList<Permutation>();
+		parents.ensureCapacity(startNumberOfPermutations);
 		//initiate parents
 		for (int i=0; i<startNumberOfPermutations; i++){
 			Permutation parent = new Permutation(length);
+			parent.setPermutation(g.getPermutation());
 			parent.randomShuffle(random.nextInt());
 			parent.setCutwidth(g.cutwidth(parent.getPermutation()));
 			parents.add(parent);
@@ -27,7 +30,8 @@ public class Evolution{
 	}
 
 	public Evolution(Permutation permutation, int startNumberOfPermutations){
-		parents = new ArrayList<Permutation>(startNumberOfPermutations);
+		parents = new ArrayList<Permutation>();
+		parents.ensureCapacity(startNumberOfPermutations);
 		//initiate parents
 		for (int i=0; i<startNumberOfPermutations; i++){
 			Permutation parent = new Permutation();
@@ -41,27 +45,24 @@ public class Evolution{
 		int numberOfParents = parents.size();
 		int min1 = 0;
 		int min2 = 0;
-		int min3 = 0;
-
-		Set<Permutation> children = new TreeSet<Permutation>(new Comparator<Permutation>() {
+		int min3;
+		/*
+		TreeSet<Permutation> children = new TreeSet<Permutation>(new Comparator<Permutation>() {
 			public int compare(Permutation p1, Permutation p2) {
-				if (p1.getCutwidth()!=p2.getCutwidth()){
-					return p1.getCutwidth()-p2.getCutwidth();
-				} else return 1;
+				return p1.compareTo(p2);
 			}
 		});
+		*/
+		Set<Permutation> children = new TreeSet<Permutation>();
 
-		ArrayList<Permutation> unsortedChildren = 
-			new ArrayList<Permutation>(numberOfChildren*numberOfParents);
-		long currTime = 0;
-		
+		ArrayList<Permutation> unsortedChildren = new ArrayList<Permutation>();
+		unsortedChildren.ensureCapacity(numberOfChildren*numberOfParents);
+
+
 		//get children
 		for (int step=0; step<numberOfSteps; step++){
-			System.out.println("STEP "+step+". Parents "+parents.size()
-						+". Children "+numberOfChildren*parents.size());
-			currTime = System.currentTimeMillis();
-			unsortedChildren.clear();
-			//System.out.println("Get children");
+			//unsortedChildren.clear();
+			children.clear();
 			for (Permutation parent: parents){
 				//System.out.print("o");
 				for (int i=0; i<numberOfChildren; i++){	
@@ -71,26 +72,42 @@ public class Evolution{
 					for (int j=0;j<numberOfSwaps;j++){
 						child.randomSwap(random.nextInt());	
 					}
-					//child.randomSwap(random.nextInt());
-					//child.randomSwap(random.nextInt());
 					child.setCutwidth(g.cutwidth(child.getPermutation()));
-					unsortedChildren.add(child);
+					//unsortedChildren.add(child);
+					children.add(child);
 				}
 			}
-			//System.out.println();
-			//System.out.println(System.currentTimeMillis()-currTime);
-			children.clear();
-			children.addAll(unsortedChildren);
+			//children.clear();
+			//children.addAll(unsortedChildren);
+			System.out.println("STEP "+step+". Parents "+parents.size()
+						+". Children "+children.size());
 			parents.clear();
 
-			int i=1;
+			int counter = 1;
 			for (Permutation childo: children){
 				parents.add(childo);
-				i++;
-				if (i>numberOfParents) {break;}
+				//childo.viewPermutation();
+				counter++;
+				if (counter>numberOfParents) {break;}
 			}
-			
 			parents.get(0).viewPermutation(true);
+
+			/*
+			Iterator<Permutation> iterator = children.iterator();
+			Permutation childo = null;
+
+			for (int i=0; i<numberOfParents; i++){
+				if (iterator.hasNext()){
+					childo = iterator.next();
+					childo.viewPermutation();
+				}
+			}
+			parents.addAll(children.headSet(childo));
+			System.out.println("children: "+children.size());
+			for (Permutation parent: parents){
+				parent.viewPermutation();
+			}
+			*/
 			/*
 			parents.get(parents.size()-1).viewPermutation();
 			if (step==numberOfSteps-1) {

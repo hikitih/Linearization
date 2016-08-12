@@ -11,18 +11,29 @@ public class Permutation implements Comparable<Permutation>{
 
 
 	public Permutation(){
-		this.permutation = new ArrayList<Integer>();
+		this(0);
 	}
 
 	public Permutation(int length){
-		this.permutation = new ArrayList<Integer>();
-		for (int i = 0; i<length; i++){
-			permutation.add(i);
-		}
+		permutation = new ArrayList<Integer>();
+		permutation.ensureCapacity(length);
 	}
 
 	public int compareTo(Permutation anotherPermutation){
-		return this.getCutwidth() - anotherPermutation.getCutwidth();
+		int diff = this.getCutwidth() - anotherPermutation.getCutwidth();
+		if (diff == 0) {
+			int counter = 0;
+			for (int number: permutation){
+				diff = number - anotherPermutation.permutation.get(counter);
+				if (diff!=0){
+					return diff;
+				}
+				counter++;
+			}
+			return 0;
+		} else {
+			return diff;
+		}
 	}
 
 	public void randomShuffle(long plus){
@@ -43,9 +54,11 @@ public class Permutation implements Comparable<Permutation>{
 
 	public void setPermutation(ArrayList<Integer> permutation){
 		this.permutation.clear();
+		int length = permutation.size();
+		this.permutation.ensureCapacity(length);
 		for (Integer x: permutation) {
 			this.permutation.add(x);
-		}//need save way to ensure this is real permutation from 0 to l-1
+		}
 	}
 
 	public ArrayList<Integer> getPermutation(){
@@ -67,6 +80,15 @@ public class Permutation implements Comparable<Permutation>{
 
 	public void viewPermutation(){
 		viewPermutation(false);
+	}
+
+	public String toString(){
+		String s="";
+		for (int x: permutation) {
+			s = s + x + ", ";
+		}
+		s=s+" cutwidth = "+cutwidth+" average = ";
+		return s;	
 	}
 
 	public void viewPermutation(boolean onlyCutwidth){
