@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 public class Node{
 	int id;
-	//String name;
 	ArrayList<Integer> edgeKeys;	//keys of all adjanced edges
 	int indegree;			//total weight of all in-edges
 	int outdegree;			//total weight of all out-edges
@@ -14,12 +13,7 @@ public class Node{
 		edgeKeys = new ArrayList<Integer> (2);
 	}
 
-	public Node(int id) {
-		this(id,null);
-	}
-
-	public Node(int id, String name){
-		//this.name = name;
+	public Node(int id){
 		this.id = id;
 		edgeKeys = new ArrayList<Integer> (2);
 	}
@@ -57,7 +51,7 @@ public class Node{
 			}
 		}
 		return "V "+id+stringInEdges+stringOutEdges
-			+" inWeight: "+indegree+" outweight: "+outdegree;
+			+" inWeight: "+indegree+" outWeight: "+outdegree;
 	}
 
 	public void ClearEdges(){
@@ -88,8 +82,17 @@ public class Node{
 		}
 	}
 
+	//make weight negative when adding out-edge
 	public void addEdge(int key, int weight){
 		edgeKeys.add(key);
+		if (weight>0) {
+			indegree += weight;
+		} else {
+			outdegree -= weight;	//add |weight|
+		}
+	}
+
+	public void changeWeight(int weight){
 		if (weight>0) {
 			indegree += weight;
 		} else {

@@ -6,17 +6,17 @@ import java.util.HashMap;
 
 public class Graph {
 	private HashMap<Integer,Node> vertices;	//All vertices of the graph
-	private Edges edges;			//All edges of the graph
-	private int nextEdgeKey = 0;		//
-	int count;			//number of vertices 
+	private Edges edges;					//All edges of the graph
+	private int nextEdgeKey = 0;			//
+	int count;								//number of vertices
 	private ArrayList<Integer> sources; 	//array of sources (assumed to be small)
-	private ArrayList<Integer> sinks; 	//array of sinks (assumed to be small)
-	private ArrayList<Integer> s1,s2;	//result sorting (s2=sinks, s1=rest)
-	private int left;			//number of unsorted vertices (to control finish)
+	private ArrayList<Integer> sinks; 		//array of sinks (assumed to be small)
+	private ArrayList<Integer> s1,s2;		//result sorting (s2=sinks, s1=rest)
+	private int left;						//number of unsorted vertices (to control finish)
 	private int numberOfReversingEdges = 0;	//
 	private int weightOfReversingEdges = 0; //
-	private int lefttoright = 0;		//number of rightward edges
-	private int righttoleft = 0;		//number of leftward edges
+	private int lefttoright = 0;			//number of rightward edges
+	private int righttoleft = 0;			//number of leftward edges
 
 	public Graph(){ this(1,0,false); }
 
@@ -82,6 +82,25 @@ public class Graph {
 			nextEdgeKey++;
 			return true;
 		} else return false;
+	}
+
+	//slower then addEdge but no duplicate edges
+	public boolean addWeightToEdge(int out, int in, int weight){
+		Node vertex = vertices.get(out);
+		if (vertex != null) {
+			for (int key : vertex.edgeKeys) {
+				Edge edge = Edges.getEdge(key);
+				if (edge.getOtherEnd(out) == in) {
+					edges.changeWeight(key, weight);
+					vertex.changeWeight(-weight);
+					vertices.get(in).changeWeight(weight);
+					return true;
+				}
+			}
+		}
+		//System.out.println("No edge "+out+","+in);
+		//addEdge(out,in,weight);
+		return false;
 	}
 
 	public void reloadVertices(){
@@ -190,19 +209,18 @@ public class Graph {
 		}
 	}
 
-	public int findMaxVertex(){
+	public int findMaxVertex(boolean sourceToSink){
 		int max = -1;
 		int maxid = -1;
-		int maxidindegree = -1;
+		int maxiddegree = -1;
 		for (Node vertex: vertices.values()){
 			if (max < (vertex.outdegree - vertex.indegree)) {
 				max = (vertex.outdegree - vertex.indegree);
 				maxid = vertex.id;
-				maxidindegree = vertex.indegree;
-			} else if ((max == (vertex.outdegree - vertex.indegree))&&
-					(vertex.indegree > maxidindegree)) {
+				maxiddegree = vertex.indegree;
+			} else if ((max == (vertex.outdegree - vertex.indegree)) && (vertex.indegree > maxiddegree)) {
 				maxid = vertex.id;
-				maxidindegree = vertex.indegree;
+				maxiddegree = vertex.indegree;
 			}//May add connection property (was connected with deleted)
 		}
 		return maxid;
@@ -225,7 +243,7 @@ public class Graph {
 			int lastsink = -1;
 
 			int lastsourcedegree = Integer.MAX_VALUE;
-			int lastsinkdegree = -1;
+			int lastsinkdegree = Integer.MAX_VALUE;
 
 			int end;
 			Node vertex;
@@ -253,7 +271,7 @@ public class Graph {
 						if (takeAny) {
 							lastsink = end;
 						} else {
-							if (lastsinkdegree < vertex.indegree) {
+							if (lastsinkdegree > vertex.indegree) {
 								lastsinkdegree = vertex.indegree;
 								lastsink = end;
 							}
@@ -439,7 +457,7 @@ public class Graph {
 					}
 					*/
 				} else {
-					next = findMaxVertex();
+					next = findMaxVertex(sourceToSink);
 					Node vertex = vertices.get(next);
 					if (vertex!=null){
 						numberOfReversingEdges += vertex.getInEdgesCount();
@@ -501,6 +519,10 @@ public class Graph {
 		for(Node vertex: vertices.values()){
 			System.out.println(vertex.toString());
 		}				
+	}
+
+	public void vertexInfo(int id){
+		System.out.println(vertices.get(id).toString());
 	}
 
 	public void shortInfo(int next){

@@ -22,6 +22,12 @@ public class Edges{
 		edges.put(key,edge);
 	}
 
+	public void changeWeight(int key, int weight){
+		Edge edge = edges.get(key);
+		edge.weight = edge.weight + weight;
+		edges.put(key,edge);
+	}
+
 	public static Edge deleteEdge(int key){
 		return edges.remove(key);
 	}

@@ -1,8 +1,8 @@
 package graph;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
+
 import graph.Graph.*;
 
 public class GraphSaveLoad{
@@ -50,11 +50,32 @@ public class GraphSaveLoad{
 		return g;
 	}
 
-	public static Graph loadGFA(String filename){
+	public static Graph loadGFA(String filename) {
+		return loadGFA(filename, "");
+	}
+
+	public static Graph loadGFA(String filename, String refName){
 		Graph g = null;
 		try(FileReader fr = new FileReader(System.getProperty("user.dir")
 				+"/src/test/"+filename);
 			Scanner scan = new Scanner(fr)){
+
+			class PathNode implements Comparable<PathNode>{
+				int num = -1;
+				int id;
+				boolean forward;
+
+				@Override
+				public int compareTo(PathNode o) {
+					return num - o.num;
+				}
+			}
+
+			class Path{
+				TreeSet<PathNode> nodes = new TreeSet<>();
+			}
+
+			HashMap<String,Path> paths = new HashMap<>();
 
 			int v1;
 			int v2;
@@ -74,22 +95,70 @@ public class GraphSaveLoad{
 						c2 = scan2.findInLine("[+-]").charAt(0);
 						if (c1==c2) {
 							if (c1=='+') {
-								g.addEdge(v1, v2);
+								g.addEdge(v1, v2, 1);
 								//System.out.println("Adding edge from "+v1+" to "+v2);
 							} else {
-								g.addEdge(v2, v1);
+								g.addEdge(v2, v1, 1);
 								//System.out.println("Adding edge from "+v2+" to "+v1);
 							}
 						}
 						//g.addEdge(v1,v2);
 						//System.out.println("Adding edge from "+v1+" to "+v2);
 					}
+					if (s.startsWith("P")) {
+						int id = Integer.parseInt(scan2.findInLine("\\d+"));
+						String name = scan2.next();
+						int num = Integer.parseInt(scan2.findInLine("\\d+"));
+						char c = scan2.findInLine("[+-]").charAt(0);
+						PathNode pathNode = new PathNode();
+						Path path;
+						if (paths.containsKey(name)){
+							path = paths.get(name);
+						} else {
+							path = new Path();
+						}
+						pathNode.id = id;
+						pathNode.num = num;
+						if (c=='+') {
+							pathNode.forward = true;
+						} else {
+							pathNode.forward = false;
+						}
+						path.nodes.add(pathNode);
+						paths.put(name,path);
+					}
 				}
 				counter++;
+				scan2.close();
 			}
+
+			//Dealing with paths
+
+			if (g!=null) {
+				int weight;
+				for (String name : paths.keySet()) {
+					Path path = paths.get(name);
+					weight = name.equals(refName) ? 5 : 1;
+
+					PathNode previousNode = new PathNode();
+					for (PathNode nextNode : path.nodes) {
+						if (nextNode.num - previousNode.num == 1) {
+							if (nextNode.forward && previousNode.forward) {
+								g.addWeightToEdge(previousNode.id, nextNode.id, weight);
+							} else if (!nextNode.forward && !previousNode.forward){
+								g.addWeightToEdge(nextNode.id, previousNode.id, weight);
+							}
+						}
+						previousNode = nextNode;
+					}
+				}
+			}
+
+
 		}  catch (IOException e){
 			e.printStackTrace();
 		}
+		g.recount();
 		return g;
 	}
 
@@ -181,7 +250,7 @@ public class GraphSaveLoad{
 						+"/src/test/"+filename));
 			PrintWriter pw = new PrintWriter(bw)){
 
-			String s="Sorted: ";
+			String s="";
 			int inLine = 0;
 			int lines = 0;
 			for (int vertex_number: sorting){
@@ -197,6 +266,8 @@ public class GraphSaveLoad{
 					pw.flush();
 				}
 			}
+			pw.println(s);
+			pw.flush();
 			return true;
 		}  catch (IOException e)	{
 			e.printStackTrace();
