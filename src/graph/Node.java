@@ -2,18 +2,18 @@ package graph;
 
 import java.util.ArrayList;
 
-public class Node{
+class Node{
 	int id;
 	ArrayList<Integer> edgeKeys;	//keys of all adjanced edges
 	int indegree;			//total weight of all in-edges
 	int outdegree;			//total weight of all out-edges
 	private boolean wasSorted = false;	//If it was sorted by graph
 
-	public Node(){
+	Node(){
 		edgeKeys = new ArrayList<Integer> (2);
 	}
 
-	public Node(int id){
+	Node(int id){
 		this.id = id;
 		edgeKeys = new ArrayList<Integer> (2);
 	}
@@ -22,11 +22,11 @@ public class Node{
 		this.id = id;
 	}
 
-	public boolean isSorted(){
+	boolean isSorted(){
 		return wasSorted;
 	}
 
-	public void setSorted(){
+	void setSorted(){
 		wasSorted = true;
 	}
 
@@ -54,13 +54,13 @@ public class Node{
 			+" inWeight: "+indegree+" outWeight: "+outdegree;
 	}
 
-	public void ClearEdges(){
+	void ClearEdges(){
 		edgeKeys.clear();
 		indegree = 0;
 		outdegree = 0;
 	}
 
-	public int getInEdgesCount(){
+	int getInEdgesCount(){
 		int result = 0;
 		for (int key: edgeKeys){
 			if (Edges.getEdge(key).isIn(id)) {
@@ -92,7 +92,7 @@ public class Node{
 		}
 	}
 
-	public void changeWeight(int weight){
+	void changeWeight(int weight){
 		if (weight>0) {
 			indegree += weight;
 		} else {
@@ -100,7 +100,7 @@ public class Node{
 		}
 	}
 
-	public void deleteEdge(int key){
+	void deleteEdge(int key){
 		Integer keyToRemove = key;
 		edgeKeys.remove(keyToRemove);
 		Edge edge = Edges.getEdge(key);

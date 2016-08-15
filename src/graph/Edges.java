@@ -2,27 +2,27 @@ package graph;
 
 import java.util.HashMap;
 
-public class Edges{
+class Edges{
 	static HashMap<Integer,Edge> edges;
 
-	public Edges(){
+	Edges(){
 		edges = new HashMap<Integer,Edge>();
 	}
 
-	public Edges(int count){
-		edges = new HashMap<Integer,Edge>(count);
+	Edges(int count){
+		edges = new HashMap<Integer,Edge>(count*4/3);
 	}
 
-	public void addEdge(int key, int out, int in){
+	public static void addEdge(int key, int out, int in){
 		addEdge(key,out,in,1);
 	}
 
-	public void addEdge(int key, int out, int in, int weight){
+	public static void addEdge(int key, int out, int in, int weight){
 		Edge edge = new Edge(out,in,weight);
 		edges.put(key,edge);
 	}
 
-	public void changeWeight(int key, int weight){
+	static void changeWeight(int key, int weight){
 		Edge edge = edges.get(key);
 		edge.weight = edge.weight + weight;
 		edges.put(key,edge);
@@ -32,7 +32,7 @@ public class Edges{
 		return edges.remove(key);
 	}
 
-	public static Edge getEdge(int key){
+	static Edge getEdge(int key){
 		return edges.get(key);
 	}
 }

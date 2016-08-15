@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class Graph {
 	private HashMap<Integer,Node> vertices;	//All vertices of the graph
-	private Edges edges;					//All edges of the graph
+	//private Edges edges;					//All edges of the graph
 	private int nextEdgeKey = 0;			//
 	int count;								//number of vertices
 	private ArrayList<Integer> sources; 	//array of sources (assumed to be small)
@@ -37,9 +37,9 @@ public class Graph {
 			}
 
 			if (numberOfEdges>0){
-				edges = new Edges(numberOfEdges);
+				new Edges(numberOfEdges);
 			} else {
-				edges = new Edges();
+				new Edges();
 			}
 			
 			count = numberOfVertices;
@@ -66,7 +66,7 @@ public class Graph {
 	public boolean addEdge(int out, int in, int weight, boolean verticesExists){
 		if (in!=out){
 			if (weight < 0) {weight = 1;}
-			edges.addEdge(nextEdgeKey,out,in,weight);
+			Edges.addEdge(nextEdgeKey,out,in,weight);
 			if (!verticesExists) {
 				if (!vertices.containsKey(out)) {
 					Node node = new Node(out);
@@ -91,7 +91,7 @@ public class Graph {
 			for (int key : vertex.edgeKeys) {
 				Edge edge = Edges.getEdge(key);
 				if (edge.getOtherEnd(out) == in) {
-					edges.changeWeight(key, weight);
+					Edges.changeWeight(key, weight);
 					vertex.changeWeight(-weight);
 					vertices.get(in).changeWeight(weight);
 					return true;
@@ -118,7 +118,7 @@ public class Graph {
 		s2.ensureCapacity(count/3);
 	}
 
-	public int getCount(){ return count;	}
+	public int getCount(){ return count; }
 
 	public ArrayList<Integer> getSorting(){
 		ArrayList<Integer> result = new ArrayList<>();
@@ -194,11 +194,11 @@ public class Graph {
 		return lefttoright;
 	}
 
-	public void fillSourcesAndSinks(){
+	private void fillSourcesAndSinks(){
 		fillSourcesAndSinks(false);
 	}
 
-	public void fillSourcesAndSinks(boolean withoutSinks){
+	private void fillSourcesAndSinks(boolean withoutSinks){
 		if (left>0){
 			for (Node vertex: vertices.values()){
 				if (vertex.indegree==0) {sources.add(vertex.id);}
@@ -209,7 +209,7 @@ public class Graph {
 		}
 	}
 
-	public int findMaxVertex(boolean sourceToSink){
+	private int findMaxVertex(){
 		int max = -1;
 		int maxid = -1;
 		int maxiddegree = -1;
@@ -226,11 +226,11 @@ public class Graph {
 		return maxid;
 	}
 
-	public int deleteVertex(int id){
+	private int deleteVertex(int id){
 		return deleteVertex(id,true,false,true,true);
 	}
 
-	public int deleteVertex(int id, boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny){
+	private int deleteVertex(int id, boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny){
 		if (id<0) {return -1;}
 		else {
 			/*Integer idToRemove = id;
@@ -457,7 +457,7 @@ public class Graph {
 					}
 					*/
 				} else {
-					next = findMaxVertex(sourceToSink);
+					next = findMaxVertex();
 					Node vertex = vertices.get(next);
 					if (vertex!=null){
 						numberOfReversingEdges += vertex.getInEdgesCount();
@@ -501,12 +501,18 @@ public class Graph {
 		//System.out.println();
 	}
 
-	public void outputSorting(){
+	public void viewSorting(){
+		viewSorting(false);
+	}
+
+	public void viewSorting(boolean printOnlyParameters){
 		String s =  "";
 		String ss =  "";
 		for (int x: s1) {s=s+","+x;}
-		for (int x: s2) {ss=","+x+ss;} 
-		System.out.println(s+"---------"+ss);
+		for (int x: s2) {ss=","+x+ss;}
+		if (!printOnlyParameters) {
+			System.out.println(s + "---------" + ss);
+		}
 		System.out.println("Number of reversing edges: "+numberOfReversingEdges);
 		System.out.println("Weight of reversing edges: "+weightOfReversingEdges);
 	}
@@ -514,6 +520,8 @@ public class Graph {
 	public int getNumberOfReversingEdges(){
 		return numberOfReversingEdges;
 	}
+
+	public int getWeightOfReversingEdges() { return weightOfReversingEdges; }
 
 	public void info(){
 		for(Node vertex: vertices.values()){

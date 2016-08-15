@@ -119,11 +119,7 @@ public class GraphSaveLoad{
 						}
 						pathNode.id = id;
 						pathNode.num = num;
-						if (c=='+') {
-							pathNode.forward = true;
-						} else {
-							pathNode.forward = false;
-						}
+						pathNode.forward = ( c=='+' );
 						path.nodes.add(pathNode);
 						paths.put(name,path);
 					}
