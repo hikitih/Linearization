@@ -17,6 +17,7 @@ public class Graph {
 	private int weightOfReversingEdges = 0; //
 	private int lefttoright = 0;			//number of rightward edges
 	private int righttoleft = 0;			//number of leftward edges
+	private ArrayList<Integer> reversedEdges;
 
 	public Graph(){ this(1,0,false); }
 
@@ -50,6 +51,8 @@ public class Graph {
 			s2 = new ArrayList<Integer>();
 			s2.ensureCapacity(count/3);
 			left = count;
+
+			reversedEdges = new ArrayList<>(200);
 		}
 	}
 
@@ -77,23 +80,23 @@ public class Graph {
 					vertices.put(in, node);
 				}
 			}
-			vertices.get(out).addEdge(nextEdgeKey,-weight);
-			vertices.get(in).addEdge(nextEdgeKey,weight);
+			vertices.get(out).addEdge(nextEdgeKey,false,weight);
+			vertices.get(in).addEdge(nextEdgeKey,true,weight);
 			nextEdgeKey++;
 			return true;
 		} else return false;
 	}
 
-	//slower then addEdge but no duplicate edges
-	public boolean addWeightToEdge(int out, int in, int weight){
+	//true if succeed
+	boolean addWeightToEdge(int out, int in, int weight){
 		Node vertex = vertices.get(out);
 		if (vertex != null) {
 			for (int key : vertex.edgeKeys) {
 				Edge edge = Edges.getEdge(key);
 				if (edge.getOtherEnd(out) == in) {
-					Edges.changeWeight(key, weight);
-					vertex.changeWeight(-weight);
-					vertices.get(in).changeWeight(weight);
+					Edges.addWeight(key,weight);
+					vertex.changeWeight(false,weight);
+					vertices.get(in).changeWeight(true,weight);
 					return true;
 				}
 			}
@@ -106,8 +109,8 @@ public class Graph {
 	public void reloadVertices(){
 		for (Integer key: Edges.edges.keySet()){
 			Edge edge = Edges.edges.get(key);
-			vertices.get(edge.out).addEdge(key,-edge.weight);
-			vertices.get(edge.in).addEdge(key,edge.weight);
+			vertices.get(edge.out).addEdge(key,false,edge.weight);
+			vertices.get(edge.in).addEdge(key,true,edge.weight);
 		}
 	}
 
@@ -254,7 +257,7 @@ public class Graph {
 				vertex = vertices.get(end);
 				vertex.deleteEdge(key);
 				//If vertex has no edges left immediately put it into s1
-				if (vertex.outdegree == 0 && vertex.indegree==0){
+				if (vertex.outdegree == 0 && vertex.indegree == 0){
 					if ( !vertex.isSorted() ){
 						vertex.setSorted();
 						left -= 1;
@@ -462,6 +465,12 @@ public class Graph {
 					if (vertex!=null){
 						numberOfReversingEdges += vertex.getInEdgesCount();
 						weightOfReversingEdges += vertex.indegree;
+
+						for (Integer key: vertex.edgeKeys){
+							if (Edges.getEdge(key).isIn(next)){
+								reversedEdges.add(key);
+							}
+						}
 					} else {
 						return;
 					}
@@ -502,19 +511,36 @@ public class Graph {
 	}
 
 	public void viewSorting(){
-		viewSorting(false);
+		viewSorting(false,false);
 	}
 
 	public void viewSorting(boolean printOnlyParameters){
-		String s =  "";
-		String ss =  "";
-		for (int x: s1) {s=s+","+x;}
-		for (int x: s2) {ss=","+x+ss;}
+		viewSorting(printOnlyParameters,false);
+	}
+
+	public void viewSorting(boolean printOnlyParameters, boolean viewReversedEdges){
 		if (!printOnlyParameters) {
+			String s =  "";
+			String ss =  "";
+			for (int x: s1) {s=s+","+x;}
+			for (int x: s2) {ss=","+x+ss;}
 			System.out.println(s + "---------" + ss);
 		}
 		System.out.println("Number of reversing edges: "+numberOfReversingEdges);
 		System.out.println("Weight of reversing edges: "+weightOfReversingEdges);
+		if (viewReversedEdges) {
+			System.out.println("Reversing edges: ");
+			ArrayList<Integer> ss = new ArrayList<>(count);
+			ss.addAll(s1);
+			ss.addAll(s2);
+			for (Integer key : reversedEdges) {
+				Edge edge = Edges.getEdge(key);
+				System.out.print(edge);
+				Integer from = edge.out;
+				Integer to = edge.in;
+				System.out.println("  length  " + (ss.indexOf(from) - ss.indexOf(to)));
+			}
+		}
 	}
 
 	public int getNumberOfReversingEdges(){

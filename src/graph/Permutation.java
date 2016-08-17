@@ -42,9 +42,9 @@ public class Permutation implements Comparable<Permutation>{
 		Random random = new Random(date.getTime()+plus);
 
 		int i;
-		int l = length();
-		for(int k=0; k<l; k++){
-			i = random.nextInt(length()-1);
+		int length = length();
+		for(int k=0; k<length; k++){
+			i = random.nextInt(length-1);
 			shuffle = permutation.get(i);
 			permutation.remove(i);
 			permutation.add(shuffle);					
@@ -67,7 +67,9 @@ public class Permutation implements Comparable<Permutation>{
 
 	public void setCutwidth(int cutwidth){
 		this.cutwidth = cutwidth;
-		if (permutation.size()>0) cutwidthAverage = (double) cutwidth/permutation.size();
+		if (permutation.size()>1) {
+			cutwidthAverage = (double) cutwidth/(permutation.size()-1);
+		}
 	}
 
 	public int getCutwidth(){
@@ -82,6 +84,7 @@ public class Permutation implements Comparable<Permutation>{
 		viewPermutation(false);
 	}
 
+	@Override
 	public String toString(){
 		String s="";
 		for (int x: permutation) {
@@ -106,11 +109,12 @@ public class Permutation implements Comparable<Permutation>{
 		Date date = new Date();
 		Random random = new Random(date.getTime()+plus);
 
-		int x1 = random.nextInt(length()-1);
-		int x2 = random.nextInt(length()-1);
-		if (length()>1){
+		int length = length();
+		int x1 = random.nextInt(length-1);
+		int x2 = random.nextInt(length-1);
+		if (length>1){
 			while (x2==x1){
-				x2 = random.nextInt(length()-1);
+				x2 = random.nextInt(length-1);
 			}
 		}
 

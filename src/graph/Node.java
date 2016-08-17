@@ -34,6 +34,7 @@ class Node{
 		this.wasSorted = wasSorted;
 	}
 
+	@Override
 	public String toString(){
 		Edge edge;
 		String stringInEdges = " IN: ";
@@ -83,20 +84,20 @@ class Node{
 	}
 
 	//make weight negative when adding out-edge
-	public void addEdge(int key, int weight){
+	public void addEdge(int key, boolean isInEdge, int weight){
 		edgeKeys.add(key);
-		if (weight>0) {
+		if (isInEdge) {
 			indegree += weight;
 		} else {
-			outdegree -= weight;	//add |weight|
+			outdegree += weight;	//add |weight|
 		}
 	}
 
-	void changeWeight(int weight){
-		if (weight>0) {
+	void changeWeight(boolean isInEdge,int weight){
+		if (isInEdge) {
 			indegree += weight;
 		} else {
-			outdegree -= weight;	//add |weight|
+			outdegree += weight;	//add |weight|
 		}
 	}
 
