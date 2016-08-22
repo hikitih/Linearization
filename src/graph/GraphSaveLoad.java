@@ -88,6 +88,10 @@ public class GraphSaveLoad{
 				if (counter==0){
 					g = new Graph();
 				} else {
+					if (s.startsWith("S")){
+						v1 = Integer.parseInt(scan2.findInLine("\\d+"));
+						g.addVertex(v1);
+					}
 					if (s.startsWith("L")) {
 						v1 = Integer.parseInt(scan2.findInLine("\\d+"));
 						c1 = scan2.findInLine("[+-]").charAt(0);
@@ -134,7 +138,7 @@ public class GraphSaveLoad{
 				int weight;
 				for (String name : paths.keySet()) {
 					Path path = paths.get(name);
-					weight = name.equals(refName) ? 5 : 1;
+					weight = name.equals(refName) ? 15 : 1;
 
 					PathNode previousNode = new PathNode();
 					for (PathNode nextNode : path.nodes) {
@@ -154,7 +158,7 @@ public class GraphSaveLoad{
 		}  catch (IOException e){
 			e.printStackTrace();
 		}
-		g.recount();
+		if (g!=null) { g.recount(); }
 		return g;
 	}
 
@@ -178,6 +182,38 @@ public class GraphSaveLoad{
 		}
 		return sorted;
 	}
+
+	public static boolean saveGFA(String filename, Graph g){
+        try(BufferedWriter bw = new BufferedWriter(
+                new FileWriter(System.getProperty("user.dir")
+                        +"/src/test/"+filename));
+            PrintWriter pw = new PrintWriter(bw)){
+            Edge edge;
+            pw.println("H\tVN:Z:1.0");
+            for (Node vertex: g.getVertices().values()){
+                StringBuffer s = new StringBuffer(1000);
+                s.append("S\t");
+                s.append(vertex.id);
+                s.append("\tN\n");
+                for (Integer key: vertex.edgeKeys){
+                    edge = Edges.getEdge(key);
+                    if (!edge.isIn(vertex.id)) {
+                        s.append("L\t");
+                        s.append(vertex.id);
+                        s.append("\t+\t");
+                        s.append(edge.getOtherEnd(vertex.id));
+                        s.append("\t+\t0M\n");
+                    }
+                }
+                pw.print(s);
+            }
+            pw.flush();
+            return true;
+        }  catch (IOException e)	{
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 	public static Graph loadWeightedGraph(String filename){
 		Graph g = null;

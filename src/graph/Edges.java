@@ -22,7 +22,7 @@ class Edges{
 		edges.put(key,edge);
 	}
 
-	static void changeWeight(int key, int weight){
+	static void addWeight(int key, int weight){
 		Edge edge = edges.get(key);
 		edge.weight = edge.weight + weight;
 		edges.put(key,edge);
