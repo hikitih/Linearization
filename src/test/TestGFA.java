@@ -1,5 +1,6 @@
 package test;
 
+import graph.Evolution;
 import graph.Graph;
 import graph.GraphSaveLoad;
 import graph.Permutation;
@@ -12,14 +13,12 @@ public class TestGFA {
 
         if (g!=null) {
             System.out.println("Total vertices in graph: " + g.getCount());
-
-
-            System.out.println("My sorting: ");
             //g.info();
+            System.out.println("My sorting: ");
             g.sorting();
-            //g.viewSorting(true);
-            GraphSaveLoad.saveSorting("brca1_sorted.txt",g.getSorting());
-            System.out.println("Reversed edges: " + g.getNumberOfReversingEdges());
+            //GraphSaveLoad.saveSorting("brca1_sorted.txt",g.getSorting());
+            g.viewSorting(true);
+
             mySorting.setPermutation(g.getSorting());
             g.reloadVertices();
             mySorting.setCutwidth(g.cutwidth(mySorting.getPermutation()));
@@ -32,6 +31,8 @@ public class TestGFA {
             System.out.println("Reversed edges: " + g.rightToLeft(sorted.getPermutation()));
             sorted.setCutwidth(g.cutwidth(sorted.getPermutation()));
             sorted.viewPermutation(true);
+
+            GraphSaveLoad.saveGFA("brca1_try_to_save.gfa",g);
 
             //g.outputSorting();
         }
