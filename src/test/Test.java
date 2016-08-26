@@ -2,6 +2,7 @@ package test;
 
 import graph.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class Test {
@@ -219,13 +220,13 @@ public class Test {
 		p.setCutwidth(g.cutwidth(p.getPermutation()));
 		p.viewPermutation(true);
 
-		ArrayList<Integer> test_bubble = new ArrayList<>();
+		HashSet<Integer> test_bubble = new HashSet<>();
 		test_bubble.add(1);
 		test_bubble.add(2);
-		test_bubble.add(3);
-		test_bubble.add(4);
-		test_bubble.add(5);
 		test_bubble.add(6);
+		test_bubble.add(7);
+		test_bubble.add(9);
+		test_bubble.add(3);
 		Graph subGraph = g.getSubGraph(test_bubble);
 		subGraph.info();
 

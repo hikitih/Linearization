@@ -2,6 +2,8 @@ package test;
 
 import graph.Graph;
 import graph.GraphFactory;
+import graph.GraphSaveLoad;
+import graph.Permutation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,20 +26,34 @@ public class TestGraphFactory {
         }
         */
 
-        //graphFactory.setParameters(20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,6,10);
+        int backboneLength = 200;
+        ArrayList<Integer> path = new ArrayList<>(backboneLength);
+        for (int i=1; i<=backboneLength; i++){
+            path.add(i);
+        }
+        graphFactory.setParameters(backboneLength,
+                0,1,5,8,//MOBILE_ELEMENT
+                0,0,0,  //LARGE DELETION
+                2,10,20,  //INVERSION
+                15,3,8,  //DUPLICATION
+                15,1,4,  //INSERTION
+                17,1,4,  //SHORT DELETION
+                40);     //SNP
 
         graphFactory.makeGraph(true);
         Graph g = graphFactory.getGraph();
         g.info();
         g.sorting();
-        g.viewSorting();
+        g.viewSorting(false,true);
+        g.reloadVertices();
+        Permutation p = new Permutation();
+        p.setPermutation(g.getSorting());
+        p.setCutwidth(g.cutWidthNew(p.getPermutation()));
+        p.viewPermutation(true);
 
-        /*
-        graphFactory.makeGraph();
-        g = graphFactory.getGraph();
-        g.info();
-        g.sorting();
-        g.viewSorting();
-        */
+        //GraphSaveLoad.saveGFA("biograph.gfa",g,path);
+
+        //GraphSaveLoad.saveSorting("biograph_sorted.txt",g.getSorting());
+
     }
 }

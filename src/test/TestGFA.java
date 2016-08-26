@@ -8,7 +8,7 @@ import graph.Permutation;
 public class TestGFA {
 
     public static void main(String[] args){
-        Graph g = GraphSaveLoad.loadGFA("brca1.gfa");
+        Graph g = GraphSaveLoad.loadGFA("random_graph_20_63.gfa", "ref");
         Permutation mySorting = new Permutation();
 
         if (g!=null) {
@@ -16,23 +16,24 @@ public class TestGFA {
             //g.info();
             System.out.println("My sorting: ");
             g.sorting();
-            //GraphSaveLoad.saveSorting("brca1_sorted.txt",g.getSorting());
-            g.viewSorting(true);
+            //GraphSaveLoad.saveSorting("random_graph_20_63_sorted.txt",g.getSorting());
+            g.viewSorting();
 
             mySorting.setPermutation(g.getSorting());
             g.reloadVertices();
-            mySorting.setCutwidth(g.cutwidth(mySorting.getPermutation()));
+            mySorting.setCutwidth(g.cutWidthNew(mySorting.getPermutation()));
             mySorting.viewPermutation(true);
 
 
             System.out.println("\nSorting from file: ");
             Permutation sorted = new Permutation(g.getCount());
-            sorted.setPermutation(GraphSaveLoad.loadSortedGFA("sort_brca1.gfa"));
-            System.out.println("Reversed edges: " + g.rightToLeft(sorted.getPermutation()));
-            sorted.setCutwidth(g.cutwidth(sorted.getPermutation()));
+            sorted.setPermutation(GraphSaveLoad.loadSortedGFA("random_graph_20_63.gfa"));
+            sorted.setCutwidth(g.cutWidthNew(sorted.getPermutation()));
+            System.out.println("Reversed edges: " + g.getRightToLeft());
+            System.out.println("Weight: " + g.getRightToLeftWeight());
             sorted.viewPermutation(true);
 
-            GraphSaveLoad.saveGFA("brca1_try_to_save.gfa",g);
+            //GraphSaveLoad.saveGFA("brca1_try_to_save.gfa",g);
 
             //g.outputSorting();
         }
