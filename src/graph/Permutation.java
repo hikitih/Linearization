@@ -51,8 +51,8 @@ public class Permutation implements Comparable<Permutation>{
 		}
 		
 	}
-
 	public void setPermutation(ArrayList<Integer> permutation){
+
 		this.permutation.clear();
 		int length = permutation.size();
 		this.permutation.ensureCapacity(length);

@@ -2,11 +2,16 @@ package graph;
 
 import java.io.*;
 import java.util.*;
+import java.util.Date;
+import java.util.Random;
 
 import graph.Graph.*;
 
 public class GraphSaveLoad{
-	public static Graph loadGraph(String filename){
+    private static Date date = new Date();
+    private static Random random = new Random(date.getTime());
+
+    public static Graph loadGraph(String filename){
 		Graph g = null;
 		try(FileReader fr = new FileReader(System.getProperty("user.dir")
 				+"/src/test/"+filename);
@@ -183,29 +188,77 @@ public class GraphSaveLoad{
 		return sorted;
 	}
 
-	public static boolean saveGFA(String filename, Graph g){
+    public static ArrayList<Integer> loadSorting(String filename){
+        ArrayList<Integer> sorted = new ArrayList<>();
+        try(FileReader fr = new FileReader(System.getProperty("user.dir")
+                +"/src/test/"+filename);
+            Scanner scan = new Scanner(fr)){
+
+            int next;
+            while(scan.hasNextInt()){
+                next = scan.nextInt();
+                sorted.add(next);
+            }
+        }  catch (IOException e){
+            e.printStackTrace();
+        }
+        return sorted;
+    }
+
+    public static boolean saveGFA(String filename, Graph g) {
+        return saveGFA(filename,g,null);
+    }
+
+	public static boolean saveGFA(String filename, Graph g, ArrayList<Integer> path){
         try(BufferedWriter bw = new BufferedWriter(
                 new FileWriter(System.getProperty("user.dir")
                         +"/src/test/"+filename));
             PrintWriter pw = new PrintWriter(bw)){
             Edge edge;
-            pw.println("H\tVN:Z:1.0");
+            pw.print("H\tVN:Z:1.0");
             for (Node vertex: g.getVertices().values()){
                 StringBuffer s = new StringBuffer(1000);
-                s.append("S\t");
+                s.append("\nS\t");
                 s.append(vertex.id);
-                s.append("\tN\n");
+                int nextRandom = random.nextInt(4);
+                switch (nextRandom){
+                    case 0:
+                        s.append("\tA");
+                        break;
+                    case 1:
+                        s.append("\tC");
+                        break;
+                    case 2:
+                        s.append("\tT");
+                        break;
+                    case 3:
+                        s.append("\tG");
+                        break;
+                }
                 for (Integer key: vertex.edgeKeys){
                     edge = Edges.getEdge(key);
                     if (!edge.isIn(vertex.id)) {
-                        s.append("L\t");
+                        s.append("\nL\t");
                         s.append(vertex.id);
                         s.append("\t+\t");
                         s.append(edge.getOtherEnd(vertex.id));
-                        s.append("\t+\t0M\n");
+                        s.append("\t+\t0M");
                     }
                 }
                 pw.print(s);
+            }
+            if (path!=null){
+                int counter = 1;
+                for (Integer step: path){
+                    StringBuffer s = new StringBuffer(1000);
+                    s.append("\nP\t");
+                    s.append(step);
+                    s.append("\tref\t");
+                    s.append(counter);
+                    s.append("\t+\t1M");
+                    pw.print(s);
+                    counter++;
+                }
             }
             pw.flush();
             return true;

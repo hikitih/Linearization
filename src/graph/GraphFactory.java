@@ -42,12 +42,12 @@ public class GraphFactory {
 
     private void makeBackbone(int numberOfNodes){
         graph = new Graph(numberOfNodes,numberOfNodes-1,true,true);
-        for (int i=0; i<numberOfNodes-1;i++){
+        for (int i=1; i<numberOfNodes;i++){
             graph.addEdge(i,i+1,referenceWeight);
         }
-        nextNodeNumber = numberOfNodes;
-        start = 0;
-        end = numberOfNodes-1;
+        nextNodeNumber = numberOfNodes+1;
+        start = 1;
+        end = numberOfNodes;
     }
 
     private void addVariation(int from, int start, int end, int to){
@@ -103,7 +103,7 @@ public class GraphFactory {
         return true;
     }
 
-    public void addVariation(VariationType type){
+    private void addVariation(VariationType type){
         if (type==VariationType.SNP) {
             addVariation(type,1,0);
         }
@@ -115,7 +115,7 @@ public class GraphFactory {
         }
     }
 
-    private void addVariation(VariationType type, int length, int repeat){
+    private void addVariation(VariationType type, final int length, final int repeat){
         int start;
         int end;
         ArrayList<Integer> path = getPath();
@@ -131,10 +131,9 @@ public class GraphFactory {
                 }
                 break;
             case SNP:
-                length = 1;
                 if (findVariationPlace(path,1)) {
                     start = nextNodeNumber;
-                    makeVariation(length);
+                    makeVariation(1);
                     end = nextNodeNumber - 1;
                     addVariation(variationStart, start, end, variationEnd);
                 }
@@ -168,7 +167,7 @@ public class GraphFactory {
         }
 
         if (showVariations) {
-            StringBuffer s = new StringBuffer(2000);
+            StringBuilder s = new StringBuilder(2000);
             s.append(" ");
             if (!(type == VariationType.DELETION || type == VariationType.DUPLICATION)) {
                 for (int i = 0; i < length; i++) {
@@ -213,8 +212,8 @@ public class GraphFactory {
     /**
      * @param type      type of variation
      * @param law       distribution law with parameters:
-     * @param parameter1
-     * @param parameter2
+     * @param parameter1    min length for UNIFORM and EXPONENTIAL or MEAN VALUE for GAUSSIAN
+     * @param parameter2    max length for UNIFORM and EXPONENTIAL or STANDARD DEVIATION for GAUSSIAN
      * @param repeat    number of variations for all except MOBILE_ELEMENT
      *                  number of MOBILE_ELEMENT insertions for MOBILE_ELEMENT
      */
@@ -237,7 +236,7 @@ public class GraphFactory {
     private int numberOfMobileElements = 2;
     private int repeatOfMobileElements = 4;
     private int lengthStartOfMobileElements = 10;
-    private int lengthEndOfMobileElements = 20;
+    private int lengthEndOfMobileElements = 30;
     private Law lawOfMobileElements = Law.UNIFORM;
 
     private int numberOfLargeDeletions = 2;
@@ -250,7 +249,7 @@ public class GraphFactory {
     private int lengthEndOfInversions = 80;
     private Law lawOfInversions = Law.EXPONENTIAL;
 
-    private int numberOfDuplications = 4;
+    private int numberOfDuplications = 10;
     private int lengthStartOfDuplications = 2;
     private int lengthEndOfDuplications = 40;
     private Law lawOfDuplications = Law.EXPONENTIAL;
@@ -265,9 +264,9 @@ public class GraphFactory {
     private int lengthEndOfShortDeletions = 10;
     private Law lawOfShortDeletions = Law.UNIFORM;
 
-    private int numberOfSNPs = 10;
-    private int lengthStartOfSNPs = 1;
-    private int lengthEndOfSNPs = 1;
+    private int numberOfSNPs = 100;
+    private final int lengthStartOfSNPs = 1;
+    private final int lengthEndOfSNPs = 1;
     private Law lawOfSNPs = Law.UNIFORM;
 
     public void setParameters(int numberOfNodesInBackbone,
@@ -336,7 +335,7 @@ public class GraphFactory {
                 numberOfShortDeletions);
         //SNP
         addVariations(VariationType.SNP,
-                lawOfSNPs,lengthStartOfSNPs,lengthEndOfSNPs,
+                lawOfSNPs,1,1,
                 numberOfSNPs);
     }
 }

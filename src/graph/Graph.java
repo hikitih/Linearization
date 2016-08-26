@@ -3,7 +3,7 @@ package graph;
 import java.util.*;
 
 public class Graph {
-	private HashMap<Integer, Node> vertices;    //All vertices of the graph
+	HashMap<Integer, Node> vertices;    //All vertices of the graph
     private ArrayList<HashSet<Integer>> verticesByDegree;
 	//private Edges edges;					//All edges of the graph
 	private int nextEdgeKey = 0;            //
@@ -17,6 +17,7 @@ public class Graph {
     private int numberOfFindMaxVertex = 0;
 	private int lefttoright = 0;            //number of rightward edges
 	private int righttoleft = 0;            //number of leftward edges
+    private int rightToLeftWeight = 0;
 	private ArrayList<Integer> reversedEdges;
 
 	public Graph() {
@@ -39,7 +40,7 @@ public class Graph {
 		if (numberOfVertices > 0) {
 			vertices = new HashMap<Integer, Node>(numberOfVertices);
 			if (verticesConsecutive) {
-				for (int i = 0; i < numberOfVertices; i++) {
+				for (int i = 1; i <= numberOfVertices; i++) {
 					Node node = new Node(i);
 					vertices.put(i, node);
 				}
@@ -72,6 +73,20 @@ public class Graph {
         if (!vertices.containsKey(id)) {
             vertices.put(id, node);
         }
+    }
+
+    public boolean addEdge(int key, Edge edge){
+        if (!vertices.containsKey(edge.out)) {
+            Node node = new Node(edge.out);
+            vertices.put(edge.out, node);
+        }
+        if (!vertices.containsKey(edge.in)) {
+            Node node = new Node(edge.in);
+            vertices.put(edge.in, node);
+        }
+        vertices.get(edge.out).addEdge(key, false, edge.weight);
+        vertices.get(edge.in).addEdge(key, true, edge.weight);
+        return true;
     }
 
 	public boolean addEdge(int out, int in) {
@@ -128,7 +143,7 @@ public class Graph {
 		return false;
 	}
 
-	HashMap<Integer, Node> getVertices(){
+	public HashMap<Integer, Node> getVertices(){
 	    return vertices;
     }
 
@@ -141,6 +156,27 @@ public class Graph {
         return false;
     }
 
+    public Graph getSubGraph(HashSet<Integer> vertexNumbers){
+        Graph subGraph = new Graph(vertexNumbers.size(),false);
+        if (vertexNumbers.size()>0) {
+            for (Integer vertexNumber : vertexNumbers) {
+                Node vertex = vertices.get(vertexNumber);
+                subGraph.addVertex(vertexNumber);
+                if (vertex!=null) {
+                    for (Integer key : vertex.edgeKeys) {
+                        Edge edge = Edges.getEdge(key);
+                        int other = edge.getOtherEnd(vertexNumber);
+                        if (edge.in==vertexNumber && edge.out==other){
+                            subGraph.addEdge(key,edge);
+                        }
+                    }
+                }
+            }
+        }
+        return subGraph;
+    }
+
+    /*
     public Graph getSubGraph(ArrayList<Integer> vertexNumbers){
         Graph subGraph = new Graph(vertexNumbers.size(),false);
         if (vertexNumbers.size()>0) {
@@ -158,12 +194,17 @@ public class Graph {
         }
         return subGraph;
     }
+    */
 
 	public void reloadVertices() {
 		for (Integer key : Edges.edges.keySet()) {
 			Edge edge = Edges.edges.get(key);
-			vertices.get(edge.out).addEdge(key, false, edge.weight);
-			vertices.get(edge.in).addEdge(key, true, edge.weight);
+            if (!vertices.get(edge.out).edgeKeys.contains(key)) {
+                vertices.get(edge.out).addEdge(key, false, edge.weight);
+            }
+            if (!vertices.get(edge.in).edgeKeys.contains(key)) {
+                vertices.get(edge.in).addEdge(key, true, edge.weight);
+            }
 		}
 	}
 
@@ -269,10 +310,59 @@ public class Graph {
         return result;
     }
 
+    public int cutWidthNew(ArrayList<Integer> permutation){
+        rightToLeftWeight = 0;
+        righttoleft = 0;
+        lefttoright = 0;
+        reversedEdges.clear();
+        ArrayList<Integer> edgeKeys = new ArrayList<>();
+        int result = 0;
+
+        for (Integer id: permutation){
+            Node vertex = vertices.get(id);
+            if (vertex!=null) {
+                for (Integer key : vertex.edgeKeys) {
+                    Edge edge = Edges.getEdge(key);
+                    if (edgeKeys.contains(key)) {
+                        edgeKeys.remove(key);
+                    } else {
+                        edgeKeys.add(key);
+                        if (edge.isIn(id)) {
+                            righttoleft++;
+                            reversedEdges.add(key);
+                            rightToLeftWeight += edge.weight;
+                        } else {
+                            lefttoright++;
+                        }
+                    }
+                }
+                result += edgeKeys.size();
+            }
+        }
+        //System.out.println(edgeKeys);
+        for (Integer key: edgeKeys){
+            Edge edge = Edges.getEdge(key);
+            Integer start = permutation.indexOf(edge.out);
+            Integer end = permutation.indexOf(edge.in);
+            if (start < 0){
+                result -= permutation.size() - end;
+                righttoleft--;
+                rightToLeftWeight -= edge.weight;
+                reversedEdges.remove(key);
+            }
+            if (end < 0){
+                result -= permutation.size() - start;
+            }
+        }
+        return result;
+    }
+
 	public int cutwidth(ArrayList<Integer> permutation) {
-		if (permutation.size() != count) {
+		/*
+	    if (permutation.size() != count) {
 			return -1;
 		} else {
+		*/
 			ArrayList<Integer> ends = new ArrayList<>();
 			ArrayList<Integer> starts = new ArrayList<>();
 			int result = 0;
@@ -299,6 +389,7 @@ public class Graph {
 							starts.add(id);
 							if (edge.isIn(id)) {
 								righttoleft++;
+                                rightToLeftWeight += edge.weight;
 							} else {
 								lefttoright++;
 							}
@@ -307,13 +398,34 @@ public class Graph {
 				}
 				result += ends.size();
 			}
+
+			//System.out.println(starts);
+            //System.out.println(ends);
+            for (int edgeNumber=0; edgeNumber<starts.size(); edgeNumber++){
+			    Integer startNumber = starts.get(edgeNumber);
+                Integer endNumber = -1;
+                if (edgeNumber<ends.size()) {
+                    endNumber = ends.get(edgeNumber);
+                }
+			    Node vertex = vertices.get(startNumber);
+                for (int key : vertex.edgeKeys){
+                    edge = Edges.getEdge(key);
+                    if (edge!=null && edge.getOtherEnd(startNumber)==endNumber){
+                        if (edge.isIn(startNumber)){
+                            righttoleft--;
+                            rightToLeftWeight -= edge.weight;
+                        }
+                    }
+                }
+            }
 			return result;
-		}
+		//}
 	}
 
 	public int rightToLeft(ArrayList<Integer> permutation) {
 		lefttoright = 0;
 		righttoleft = 0;
+        rightToLeftWeight = 0;
 		cutwidth(permutation);
 		return righttoleft;
 	}
@@ -353,8 +465,7 @@ public class Graph {
         if (difference >= 0) {
             if (verticesByDegree.size() <= difference){
                 for (int i=verticesByDegree.size(); i<=difference; i++){
-                    HashSet<Integer> set = new HashSet<>();
-                    verticesByDegree.add(set);
+                    verticesByDegree.add(new HashSet<Integer>());
                 }
             }
             verticesByDegree.get(difference).add(id);
@@ -558,7 +669,7 @@ public class Graph {
 
 	//Main procedure
 	public void sorting() {
-		sorting(true, false, true, true);
+		sorting(true, true, true, true);
 	}
 
 	/*	sourceToSink = get source first if true, get sink first if false
@@ -566,14 +677,14 @@ public class Graph {
 		takeNeighbor = choose next vertex from neighbors of previous if possible
 		takeAny = take any neighbor/any source/sink when does have choice
 
-		default settings are true,false,true,true
+		default settings are true,true,true,true
 			we go from sources to sinks, using sinks when no sources available
 			and choose next vertex randomly among neighbors of previous source or sink respectively
 
 		wonderfully settings true,true,true,true
 		    give better results (at least on MHC data)
 
-		improved Kahn algorithm settings are true, false, false, true
+		Eades, Lin, Smyth (improved Kahn) algorithm settings are true, false, false, true
 			these should also give best performance in time sense
 
 		best natural result settings are true, false, true, false
@@ -745,7 +856,19 @@ public class Graph {
 
 	public int getNumberOfFindMaxVertex() { return numberOfFindMaxVertex; }
 
-	public void info(){
+    public int getRightToLeftWeight() {
+        return rightToLeftWeight;
+    }
+
+    public int getLeftToRight(){
+        return lefttoright;
+    }
+
+    public  int getRightToLeft(){
+        return righttoleft;
+    }
+
+    public void info(){
 		for(Node vertex: vertices.values()){
 			System.out.println(vertex.toString());
 		}				
