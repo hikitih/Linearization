@@ -1,42 +1,46 @@
 package test;
 
-import graph.Evolution;
 import graph.Graph;
 import graph.GraphSaveLoad;
 import graph.Permutation;
 
 public class TestGFA {
+    static Graph g;
+    static Permutation mySorting = new Permutation();
 
-    public static void main(String[] args){
-        Graph g = GraphSaveLoad.loadGFA("random_graph_20_63.gfa", "ref");
-        Permutation mySorting = new Permutation();
-
-        if (g!=null) {
+    public static void show(String filename, String sortname) {
+        g = GraphSaveLoad.loadGFA(filename, "ref");
+        if (g != null) {
+            System.out.println(filename);
             System.out.println("Total vertices in graph: " + g.getCount());
-            //g.info();
             System.out.println("My sorting: ");
             g.sorting();
-            //GraphSaveLoad.saveSorting("random_graph_20_63_sorted.txt",g.getSorting());
-            g.viewSorting();
+            g.viewSorting(true, false);
+            g.reloadVertices();
 
             mySorting.setPermutation(g.getSorting());
-            g.reloadVertices();
             mySorting.setCutwidth(g.cutWidthNew(mySorting.getPermutation()));
             mySorting.viewPermutation(true);
 
-
             System.out.println("\nSorting from file: ");
             Permutation sorted = new Permutation(g.getCount());
-            sorted.setPermutation(GraphSaveLoad.loadSortedGFA("random_graph_20_63.gfa"));
+            sorted.setPermutation(GraphSaveLoad.loadSorting(sortname));
             sorted.setCutwidth(g.cutWidthNew(sorted.getPermutation()));
+            System.out.println("Vertices in graph: " + sorted.length());
             System.out.println("Reversed edges: " + g.getRightToLeft());
             System.out.println("Weight: " + g.getRightToLeftWeight());
             sorted.viewPermutation(true);
+            System.out.println("\n=====================================\n");
 
-            //GraphSaveLoad.saveGFA("brca1_try_to_save.gfa",g);
-
-            //g.outputSorting();
         }
+    }
+
+    public static void main(String[] args) {
+
+        show("biographs/biograph_200_ME_0_LD_10_DU_0_InDel_32_SNP_50.gfa","biographs/biograph_200_ME_0_LD_10_DU_0_InDel_32_SNP_50.gfa.sort.txt");
+        g.info();
+        g.viewSorting(false,true);
+
     }
 
 }
