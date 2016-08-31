@@ -711,10 +711,10 @@ public class Graph {
 
 		fillSourcesAndSinks(withoutSinks);
 
-        //long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 		int nextmillion = count;
 		while (left > 0) {
-			if ((nextmillion - left) > 1000000) {
+			if ((nextmillion - left) > 100000) {
 				System.out.print(".");
 				nextmillion = left;
 			}
@@ -807,7 +807,7 @@ public class Graph {
 			}
 			//Need check if next is sink (to correct add at next stage)
 		}
-        //System.out.println("Time elapsed: "+(System.currentTimeMillis()-startTime));
+        System.out.println("\nSorting take: "+(System.currentTimeMillis()-startTime)+" ms.");
 	}
 
 	public void viewSorting() {

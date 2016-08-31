@@ -2,13 +2,14 @@ package graph;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
 
 public class GraphFactory {
     private Date date = new Date();
     private Random random = new Random(date.getTime());
 
-    public enum VariationType{
+    public enum VariationType {
         DELETION,
         INSERTION,
         MOBILE_ELEMENT,
@@ -17,7 +18,7 @@ public class GraphFactory {
         DUPLICATION;
     }
 
-    public enum Law{
+    public enum Law {
         UNIFORM,
         GAUSSIAN,
         EXPONENTIAL
@@ -40,50 +41,50 @@ public class GraphFactory {
         return graph;
     }
 
-    private void makeBackbone(int numberOfNodes){
-        graph = new Graph(numberOfNodes,numberOfNodes-1,true,true);
-        for (int i=1; i<numberOfNodes;i++){
-            graph.addEdge(i,i+1,referenceWeight);
+    private void makeBackbone(int numberOfNodes) {
+        graph = new Graph(numberOfNodes, numberOfNodes - 1, true, true);
+        for (int i = 1; i < numberOfNodes; i++) {
+            graph.addEdge(i, i + 1, referenceWeight);
         }
-        nextNodeNumber = numberOfNodes+1;
+        nextNodeNumber = numberOfNodes + 1;
         start = 1;
         end = numberOfNodes;
     }
 
-    private void addVariation(int from, int start, int end, int to){
-        if (!graph.addWeightToEdge(from,start,0)) {
-            graph.addEdge(from, start,alternativeWeight);
+    private void addVariation(int from, int start, int end, int to) {
+        if (!graph.addWeightToEdge(from, start, 0)) {
+            graph.addEdge(from, start, alternativeWeight);
         }
-        if (!graph.addWeightToEdge(end,to,0)) {
-            graph.addEdge(end, to,alternativeWeight);
+        if (!graph.addWeightToEdge(end, to, 0)) {
+            graph.addEdge(end, to, alternativeWeight);
         }
     }
 
     private void addVariation(int from, int to) {
-        if (!graph.addWeightToEdge(from,to,0)) {
-            graph.addEdge(from, to,alternativeWeight);
+        if (!graph.addWeightToEdge(from, to, 0)) {
+            graph.addEdge(from, to, alternativeWeight);
         }
     }
 
-    private void makeVariation(int length){
-        for (int i=nextNodeNumber; i<nextNodeNumber+length; i++){
+    private void makeVariation(int length) {
+        for (int i = nextNodeNumber; i < nextNodeNumber + length; i++) {
             graph.addVertex(i);
-            if (i>nextNodeNumber){
-                graph.addEdge(i-1,i);
+            if (i > nextNodeNumber) {
+                graph.addEdge(i - 1, i);
             }
         }
         nextNodeNumber += length;
     }
 
-    private ArrayList<Integer> getPath(){
+    private ArrayList<Integer> getPath() {
         ArrayList<Integer> result = new ArrayList<>();
         result.add(start);
         int next = start;
-        while (next!=end){
+        while (next != end) {
             Node node = graph.getVertices().get(next);
             int outCount = node.edgeKeys.size();
             int key = node.edgeKeys.get(random.nextInt(outCount));
-            while (Edges.getEdge(key).isIn(next)){
+            while (Edges.getEdge(key).isIn(next)) {
                 key = node.edgeKeys.get(random.nextInt(outCount));
             }
             next = Edges.getEdge(key).getOtherEnd(next);
@@ -92,8 +93,8 @@ public class GraphFactory {
         return result;
     }
 
-    private boolean findVariationPlace(ArrayList<Integer> path, int size){
-        if (size < 0 || path.size() < size + 2){
+    private boolean findVariationPlace(ArrayList<Integer> path, int size) {
+        if (size < 0 || path.size() < size + 2) {
             return false;
         }
         int difference = path.size() - size - 1;
@@ -103,69 +104,82 @@ public class GraphFactory {
         return true;
     }
 
-    private void addVariation(VariationType type){
-        if (type==VariationType.SNP) {
-            addVariation(type,1,0);
+    private void addVariation(VariationType type) {
+        if (type == VariationType.SNP) {
+            addVariation(type, 1, 0);
         }
     }
 
-    private void addVariation(VariationType type, int length){
-        if (type!=VariationType.MOBILE_ELEMENT){
-            addVariation(type,length,0);
-        }
+    private void addVariation(VariationType type, int length) {
+        addVariation(type, length, 1);
     }
 
-    private void addVariation(VariationType type, final int length, final int repeat){
+    private void addVariation(VariationType type, final int length, final int repeat) {
         int start;
         int end;
         ArrayList<Integer> path = getPath();
-        switch (type){
+        switch (type) {
             case DELETION:
-                if (findVariationPlace(path,length)) {
-                    addVariation(variationStart, variationEnd);
+                for (int i = 0; i < repeat; i++) {
+                    if (findVariationPlace(path, length)) {
+                        addVariation(variationStart, variationEnd);
+                    }
+                    show(type,length,showVariations);
                 }
                 break;
             case DUPLICATION:
-                if (findVariationPlace(path,length)) {
+                if (findVariationPlace(path, length)) {
                     addVariation(variationEnd, variationStart);
+                    show(type,length,showVariations);
                 }
                 break;
             case SNP:
-                if (findVariationPlace(path,1)) {
-                    start = nextNodeNumber;
-                    makeVariation(1);
-                    end = nextNodeNumber - 1;
-                    addVariation(variationStart, start, end, variationEnd);
+                for (int i = 0; i < repeat; i++) {
+                    if (findVariationPlace(path, 1)) {
+                        start = nextNodeNumber;
+                        makeVariation(1);
+                        end = nextNodeNumber - 1;
+                        addVariation(variationStart, start, end, variationEnd);
+                    }
+                    show(type,length,showVariations);
                 }
                 break;
             case INSERTION:
-                if (findVariationPlace(path,0)) {
-                    start = nextNodeNumber;
-                    makeVariation(length);
-                    end = nextNodeNumber - 1;
-                    addVariation(variationStart, start, end, variationEnd);
+                for (int i = 0; i < repeat; i++) {
+                    if (findVariationPlace(path, 0)) {
+                        start = nextNodeNumber;
+                        makeVariation(length);
+                        end = nextNodeNumber - 1;
+                        addVariation(variationStart, start, end, variationEnd);
+                    }
+                    show(type,length,showVariations);
                 }
                 break;
             case INVERSION:
-                if (findVariationPlace(path,length)) {
+                if (findVariationPlace(path, length)) {
                     start = nextNodeNumber;
                     makeVariation(length);
                     end = nextNodeNumber - 1;
                     addVariation(variationStart, start, end, variationEnd);
+                    show(type,length,showVariations);
                 }
                 break;
             case MOBILE_ELEMENT:
                 start = nextNodeNumber;
                 makeVariation(length);
-                end = nextNodeNumber-1;
-                for (int i=0; i<repeat;i++){
-                    if (findVariationPlace(path,0)) {
+                end = nextNodeNumber - 1;
+                for (int i = 0; i < repeat; i++) {
+                    if (findVariationPlace(path, 0)) {
                         addVariation(variationStart, start, end, variationEnd);
                     }
+                    show(type,length,showVariations);
                 }
                 break;
         }
 
+    }
+
+    private void show(VariationType type, final int length, boolean showVariations){
         if (showVariations) {
             StringBuilder s = new StringBuilder(2000);
             s.append(" ");
@@ -175,7 +189,8 @@ public class GraphFactory {
                     s.append(",");
                 }
             }
-            System.out.println(type + " =" + s + " : " + variationStart + ", " + variationEnd);
+            System.out.println(type +"(" + length + ") =" + s + " : " +
+                    variationStart + ", " + variationEnd);
         }
     }
 
@@ -184,43 +199,44 @@ public class GraphFactory {
      * UNIFORM: [a, b]
      * parameter1 = a
      * parameter2 = b
-     *
+     * <p>
      * GAUSSIAN:
      * parameter1 = EV
      * parameter2 = SD
-     *
+     * <p>
      * EXPONENTIAL:
      * parameter1 = a
      * parameter2 = b
      * lambda
      */
-    private int getLength(Law law, int parameter1, int parameter2){
-        switch (law){
+    private int getLength(Law law, int parameter1, int parameter2) {
+        switch (law) {
             case UNIFORM:
                 int diff = parameter2 - parameter1;
-                return parameter1 + random.nextInt(diff+1);
+                return parameter1 + random.nextInt(diff + 1);
             case GAUSSIAN:
                 Double gaussian = random.nextGaussian() * parameter2 + parameter1;
                 return gaussian.intValue();
             case EXPONENTIAL:
-                Double exp = parameter1 * Math.pow(parameter2 / parameter1, Math.pow(random.nextDouble(),2));
+                Double exp = parameter1 * Math.pow(parameter2 / parameter1, Math.pow(random.nextDouble(), 2));
                 return exp.intValue();
         }
         return -1;
     }
 
     /**
-     * @param type      type of variation
-     * @param law       distribution law with parameters:
-     * @param parameter1    min length for UNIFORM and EXPONENTIAL or MEAN VALUE for GAUSSIAN
-     * @param parameter2    max length for UNIFORM and EXPONENTIAL or STANDARD DEVIATION for GAUSSIAN
-     * @param repeat    number of variations for all except MOBILE_ELEMENT
-     *                  number of MOBILE_ELEMENT insertions for MOBILE_ELEMENT
+     * @param type       type of variation
+     * @param law        distribution law with parameters:
+     * @param parameter1 min length for UNIFORM and EXPONENTIAL or MEAN VALUE for GAUSSIAN
+     * @param parameter2 max length for UNIFORM and EXPONENTIAL or STANDARD DEVIATION for GAUSSIAN
+     * @param repeat     number of variations for all except MOBILE_ELEMENT
+     *                   number of MOBILE_ELEMENT insertions for MOBILE_ELEMENT
      */
     private void addVariations(VariationType type,
-                              Law law, int parameter1, int parameter2,
-                              int repeat){
-        if (type==VariationType.MOBILE_ELEMENT){
+                               Law law, int parameter1, int parameter2,
+                               int repeat) {
+        if (type == VariationType.MOBILE_ELEMENT || type == VariationType.SNP ||
+                type == VariationType.DELETION || type == VariationType.INSERTION) {
             int length = getLength(law, parameter1, parameter2);
             addVariation(type, length, repeat);
         } else {
@@ -240,6 +256,7 @@ public class GraphFactory {
     private Law lawOfMobileElements = Law.UNIFORM;
 
     private int numberOfLargeDeletions = 2;
+    private int repeatOfLargeDeletions = 1;
     private int lengthStartOfLargeDeletions = 20;
     private int lengthEndOfLargeDeletions = 80;
     private Law lawOfLargeDeletions = Law.EXPONENTIAL;
@@ -254,35 +271,39 @@ public class GraphFactory {
     private int lengthEndOfDuplications = 40;
     private Law lawOfDuplications = Law.EXPONENTIAL;
 
-    private int numberOfInsertions = 80;
+    private int numberOfInsertions = 4;
+    private int repeatOfInsertions = 20;
     private int lengthStartOfInsertions = 1;
     private int lengthEndOfInsertions = 10;
     private Law lawOfInsertions = Law.UNIFORM;
 
-    private int numberOfShortDeletions = 80;
+    private int numberOfShortDeletions = 4;
+    private int repeatOfShortDeletions = 20;
     private int lengthStartOfShortDeletions = 1;
     private int lengthEndOfShortDeletions = 10;
     private Law lawOfShortDeletions = Law.UNIFORM;
 
-    private int numberOfSNPs = 100;
+    private int numberOfSNPs = 8;
+    private int repeatOfSNPs = 20;
     private final int lengthStartOfSNPs = 1;
     private final int lengthEndOfSNPs = 1;
     private Law lawOfSNPs = Law.UNIFORM;
 
     public void setParameters(int numberOfNodesInBackbone,
                               int numberOfMobileElements, int repeatOfMobileElements, int lengthStartOfMobileElements, int lengthEndOfMobileElements,
-                              int numberOfLargeDeletions, int lengthStartOfLargeDeletions, int lengthEndOfLargeDeletions,
+                              int numberOfLargeDeletions, int repeatOfLargeDeletions, int lengthStartOfLargeDeletions, int lengthEndOfLargeDeletions,
                               int numberOfInversions, int lengthStartOfInversions, int lengthEndOfInversions,
                               int numberOfDuplications, int lengthStartOfDuplications, int lengthEndOfDuplications,
-                              int numberOfInsertions, int lengthStartOfInsertions, int lengthEndOfInsertions,
-                              int numberOfShortDeletions, int lengthStartOfShortDeletions, int lengthEndOfShortDeletions,
-                              int numberOfSNPs){
+                              int numberOfInsertions, int repeatOfInsertions, int lengthStartOfInsertions, int lengthEndOfInsertions,
+                              int numberOfShortDeletions, int repeatOfShortDeletions, int lengthStartOfShortDeletions, int lengthEndOfShortDeletions,
+                              int numberOfSNPs, int repeatOfSNPs) {
         this.numberOfNodesInBackbone = numberOfNodesInBackbone;
         this.numberOfMobileElements = numberOfMobileElements;
         this.repeatOfMobileElements = repeatOfMobileElements;
         this.lengthStartOfMobileElements = lengthStartOfMobileElements;
         this.lengthEndOfMobileElements = lengthEndOfMobileElements;
         this.numberOfLargeDeletions = numberOfLargeDeletions;
+        this.repeatOfLargeDeletions = repeatOfLargeDeletions;
         this.lengthEndOfLargeDeletions = lengthEndOfLargeDeletions;
         this.lengthStartOfLargeDeletions = lengthStartOfLargeDeletions;
         this.numberOfInversions = numberOfInversions;
@@ -292,50 +313,77 @@ public class GraphFactory {
         this.lengthStartOfDuplications = lengthStartOfDuplications;
         this.lengthEndOfDuplications = lengthEndOfDuplications;
         this.numberOfInsertions = numberOfInsertions;
+        this.repeatOfInsertions = repeatOfInsertions;
         this.lengthStartOfInsertions = lengthStartOfInsertions;
         this.lengthEndOfInsertions = lengthEndOfInsertions;
         this.numberOfShortDeletions = numberOfShortDeletions;
+        this.repeatOfShortDeletions = repeatOfShortDeletions;
         this.lengthStartOfShortDeletions = lengthStartOfShortDeletions;
         this.lengthEndOfShortDeletions = lengthEndOfShortDeletions;
         this.numberOfSNPs = numberOfSNPs;
+        this.repeatOfSNPs = repeatOfSNPs;
     }
 
-    public void makeGraph(){
+    public String getParametersString() {
+        return "_" + numberOfNodesInBackbone +
+                "_ME_" + numberOfMobileElements*repeatOfMobileElements +
+                "_LD_" + numberOfLargeDeletions*repeatOfLargeDeletions +
+                "_DU_" + numberOfDuplications +
+                "_InDel_" + (numberOfInsertions*repeatOfInsertions + numberOfShortDeletions*repeatOfShortDeletions) +
+                "_SNP_" + numberOfSNPs*repeatOfSNPs;
+    }
+
+    public void makeGraph() {
         makeGraph(false);
     }
 
-    public void makeGraph(boolean showVariations){
+    public void makeGraph(boolean showVariations) {
         this.showVariations = showVariations;
+        long startTime = System.currentTimeMillis();
         makeBackbone(numberOfNodesInBackbone);
         //MOBILE_ELEMENT
-        for (int i=0; i<numberOfMobileElements; i++) {
+        for (int i = 0; i < numberOfMobileElements; i++) {
             addVariations(VariationType.MOBILE_ELEMENT,
                     lawOfMobileElements, lengthStartOfMobileElements, lengthEndOfMobileElements,
                     repeatOfMobileElements);
         }
+        System.out.println("ME finished");
         //DELETION
-        addVariations(VariationType.DELETION,
-                    lawOfLargeDeletions,lengthStartOfLargeDeletions,lengthEndOfLargeDeletions,
-                    numberOfLargeDeletions);
+        for (int i = 0; i < numberOfLargeDeletions; i++) {
+            addVariations(VariationType.DELETION,
+                    lawOfLargeDeletions, lengthStartOfLargeDeletions, lengthEndOfLargeDeletions,
+                    repeatOfLargeDeletions);
+        }
+        System.out.println("LARGE DELETION finished");
         //INVERSION
         addVariations(VariationType.INVERSION,
-                lawOfInversions,lengthStartOfInversions,lengthEndOfInversions,
+                lawOfInversions, lengthStartOfInversions, lengthEndOfInversions,
                 numberOfInversions);
         //DUPLICATION
         addVariations(VariationType.DUPLICATION,
-                lawOfDuplications,lengthStartOfDuplications,lengthEndOfDuplications,
+                lawOfDuplications, lengthStartOfDuplications, lengthEndOfDuplications,
                 numberOfDuplications);
+        System.out.println("DUPLICATION finished");
         //INSERTION
-        addVariations(VariationType.INSERTION,
-                lawOfInsertions,lengthStartOfInsertions,lengthEndOfInsertions,
-                numberOfInsertions);
+        for (int i = 0; i < numberOfInsertions; i++) {
+            addVariations(VariationType.INSERTION,
+                    lawOfInsertions, lengthStartOfInsertions, lengthEndOfInsertions,
+                    repeatOfInsertions);
+        }
         //DELETION
-        addVariations(VariationType.DELETION,
-                lawOfShortDeletions,lengthStartOfShortDeletions,lengthEndOfShortDeletions,
-                numberOfShortDeletions);
+        for (int i = 0; i < numberOfShortDeletions; i++) {
+            addVariations(VariationType.DELETION,
+                    lawOfShortDeletions, lengthStartOfShortDeletions, lengthEndOfShortDeletions,
+                    repeatOfShortDeletions);
+        }
+        System.out.println("INDEL finished");
         //SNP
-        addVariations(VariationType.SNP,
-                lawOfSNPs,1,1,
-                numberOfSNPs);
+        for (int i = 0; i < numberOfSNPs; i++) {
+            addVariations(VariationType.SNP,
+                    lawOfSNPs, 1, 1,
+                    repeatOfSNPs);
+        }
+        System.out.println("Creating of the graph take: " + (System.currentTimeMillis() - startTime) + " ms.");
+        graph.recount();
     }
 }
