@@ -11,6 +11,8 @@ public class GraphSaveLoad{
     private static Date date = new Date();
     private static Random random = new Random(date.getTime());
 
+    public static int refCost = 15;
+
     public static Graph loadGraph(String filename){
 		Graph g = null;
 		try(FileReader fr = new FileReader(System.getProperty("user.dir")
@@ -143,7 +145,7 @@ public class GraphSaveLoad{
 				int weight;
 				for (String name : paths.keySet()) {
 					Path path = paths.get(name);
-					weight = name.equals(refName) ? 15 : 1;
+					weight = name.equals(refName) ? refCost : 1;
 
 					PathNode previousNode = new PathNode();
 					for (PathNode nextNode : path.nodes) {
@@ -209,7 +211,11 @@ public class GraphSaveLoad{
         return saveGFA(filename,g,null);
     }
 
-	public static boolean saveGFA(String filename, Graph g, ArrayList<Integer> path){
+    public static boolean saveGFA(String filename, Graph g, ArrayList<Integer> reference){
+        return saveGFA(filename, g, reference, null);
+    }
+
+	public static boolean saveGFA(String filename, Graph g, ArrayList<Integer> reference, HashSet<ArrayList<Integer>> paths){
         try(BufferedWriter bw = new BufferedWriter(
                 new FileWriter(System.getProperty("user.dir")
                         +"/src/test/"+filename));
@@ -247,9 +253,9 @@ public class GraphSaveLoad{
                 }
                 pw.print(s);
             }
-            if (path!=null){
+            if (reference!=null){
                 int counter = 1;
-                for (Integer step: path){
+                for (Integer step: reference){
                     StringBuffer s = new StringBuffer(1000);
                     s.append("\nP\t");
                     s.append(step);
@@ -260,7 +266,28 @@ public class GraphSaveLoad{
                     counter++;
                 }
             }
+            if (paths!=null){
+                int pathNumber = 1;
+                for (ArrayList<Integer> path: paths) {
+                    int counter = 1;
+                    for (Integer step : path) {
+                        StringBuffer s = new StringBuffer(1000);
+                        s.append("\nP\t");
+                        s.append(step);
+                        s.append("\tpath");
+                        s.append(pathNumber);
+                        s.append("\t");
+                        s.append(counter);
+                        s.append("\t+\t1M");
+                        pw.print(s);
+                        counter++;
+                    }
+                    pathNumber++;
+                    pw.flush();
+                }
+            }
             pw.flush();
+            pw.close();
             return true;
         }  catch (IOException e)	{
             e.printStackTrace();

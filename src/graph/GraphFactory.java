@@ -28,6 +28,7 @@ public class GraphFactory {
     final int alternativeWeight = 1;
 
     Graph graph;
+    HashSet<ArrayList<Integer>> paths;
     int start;
     int end;
     int nextNodeNumber;
@@ -37,8 +38,16 @@ public class GraphFactory {
 
     boolean showVariations;
 
+    public GraphFactory(){
+        paths = new HashSet<>();
+    }
+
     public Graph getGraph() {
         return graph;
+    }
+
+    public HashSet<ArrayList<Integer>> getPaths(){
+        return paths;
     }
 
     private void makeBackbone(int numberOfNodes) {
@@ -89,6 +98,12 @@ public class GraphFactory {
             }
             next = Edges.getEdge(key).getOtherEnd(next);
             result.add(next);
+
+            if (result.size()>numberOfNodesInBackbone*3){
+                result.clear();
+                result.add(start);
+                next = start;
+            }
         }
         return result;
     }
@@ -106,21 +121,24 @@ public class GraphFactory {
 
     private void addVariation(VariationType type) {
         if (type == VariationType.SNP) {
-            addVariation(type, 1, 0);
+            addVariation(type, Law.UNIFORM, 1, 1, 0);
         }
     }
 
-    private void addVariation(VariationType type, int length) {
-        addVariation(type, length, 1);
+    private void addVariation(VariationType type, Law law, int parameter1, int parameter2) {
+        addVariation(type, law, parameter1, parameter2, 1);
     }
 
-    private void addVariation(VariationType type, final int length, final int repeat) {
+    private void addVariation(VariationType type, Law law, int parameter1, int parameter2, final int repeat) {
         int start;
         int end;
+        int length;
         ArrayList<Integer> path = getPath();
+        //ArrayList<Integer> variationPath = new ArrayList<>();
         switch (type) {
             case DELETION:
                 for (int i = 0; i < repeat; i++) {
+                    length = getLength(law,parameter1,parameter2);
                     if (findVariationPlace(path, length)) {
                         addVariation(variationStart, variationEnd);
                     }
@@ -128,6 +146,7 @@ public class GraphFactory {
                 }
                 break;
             case DUPLICATION:
+                length = getLength(law,parameter1,parameter2);
                 if (findVariationPlace(path, length)) {
                     addVariation(variationEnd, variationStart);
                     show(type,length,showVariations);
@@ -135,6 +154,7 @@ public class GraphFactory {
                 break;
             case SNP:
                 for (int i = 0; i < repeat; i++) {
+                    length = getLength(law,parameter1,parameter2);
                     if (findVariationPlace(path, 1)) {
                         start = nextNodeNumber;
                         makeVariation(1);
@@ -146,6 +166,7 @@ public class GraphFactory {
                 break;
             case INSERTION:
                 for (int i = 0; i < repeat; i++) {
+                    length = getLength(law,parameter1,parameter2);
                     if (findVariationPlace(path, 0)) {
                         start = nextNodeNumber;
                         makeVariation(length);
@@ -156,6 +177,7 @@ public class GraphFactory {
                 }
                 break;
             case INVERSION:
+                length = getLength(law,parameter1,parameter2);
                 if (findVariationPlace(path, length)) {
                     start = nextNodeNumber;
                     makeVariation(length);
@@ -166,6 +188,7 @@ public class GraphFactory {
                 break;
             case MOBILE_ELEMENT:
                 start = nextNodeNumber;
+                length = getLength(law,parameter1,parameter2);
                 makeVariation(length);
                 end = nextNodeNumber - 1;
                 for (int i = 0; i < repeat; i++) {
@@ -237,12 +260,12 @@ public class GraphFactory {
                                int repeat) {
         if (type == VariationType.MOBILE_ELEMENT || type == VariationType.SNP ||
                 type == VariationType.DELETION || type == VariationType.INSERTION) {
-            int length = getLength(law, parameter1, parameter2);
-            addVariation(type, length, repeat);
+            //int length = getLength(law, parameter1, parameter2);
+            addVariation(type,law, parameter1, parameter2, repeat);
         } else {
             for (int i = 0; i < repeat; i++) {
-                int length = getLength(law, parameter1, parameter2);
-                addVariation(type, length);
+                //int length = getLength(law, parameter1, parameter2);
+                addVariation(type, law, parameter1, parameter2);
             }
         }
     }

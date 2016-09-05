@@ -1,9 +1,9 @@
 package graph;
 
 class Edge{
-	public int out;		//from
-	public int in;		//to
-	public int weight;	//weight
+	int out;		//from
+	int in;			//to
+	int weight;		//weight
 
 	Edge(int out, int in){
 		this(out,in,1);

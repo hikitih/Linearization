@@ -6,6 +6,9 @@ class Edges{
 	static HashMap<Integer,Edge> edges;
 
 	Edges(){
+        if (edges!=null) {
+            edges.clear();
+        }
 		edges = new HashMap<Integer,Edge>();
 	}
 

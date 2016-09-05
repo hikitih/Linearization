@@ -697,10 +697,11 @@ public class Graph {
 		All these settings have withoutSinks == false because there is no sense not using sinks
 		 	but you could stop using them with sourceToSink == true any time you want
 	*/
-	public void sorting(boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny) {
+	public long sorting(boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny) {
+		/*
 		System.out.println("Go from sources to sinks: " + sourceToSink + "\nDo not use sinks: " + withoutSinks
 				+ "\nTake neighbor if possible: " + takeNeighbor + "\nTake random when have choice: " + takeAny);
-
+		*/
         recount();
 
 		int next = -1;
@@ -771,7 +772,7 @@ public class Graph {
 							}
 						}
 					} else {
-						return;
+						return -1;
 					}
 					issink = false;
 				}
@@ -807,7 +808,8 @@ public class Graph {
 			}
 			//Need check if next is sink (to correct add at next stage)
 		}
-        System.out.println("\nSorting take: "+(System.currentTimeMillis()-startTime)+" ms.");
+        //System.out.println("\nSorting take: "+(System.currentTimeMillis()-startTime)+" ms.");
+        return System.currentTimeMillis()-startTime;
 	}
 
 	public void viewSorting() {

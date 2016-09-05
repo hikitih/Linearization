@@ -71,6 +71,16 @@ class Node{
 		return result;
 	}
 
+	int getOutEdgesCount(){
+		int result = 0;
+		for (int key: edgeKeys){
+			if (!Edges.getEdge(key).isIn(id)) {
+				result++;
+			}
+		}
+		return result;
+	}
+
 	public void addEdge(int key){
 		Edge edge = Edges.getEdge(key);
 		if (edge!=null){

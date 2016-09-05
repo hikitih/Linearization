@@ -76,6 +76,8 @@ public class Permutation implements Comparable<Permutation>{
 		return cutwidth;
 	}
 
+	public double getCutwidthAverage() { return cutwidthAverage; }
+
 	public int length(){
 		return permutation.size();
 	}
