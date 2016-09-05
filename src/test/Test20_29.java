@@ -6,10 +6,10 @@ import java.util.ArrayList;
 public class Test20_29 {
 
 	public static void main(String[] args){
-		Graph g = new Graph(20);
+		Graph g = new Graph(20,29);
 	
-		g.addEdge(0,1);
-		g.addEdge(0,2);
+		g.addEdge(20,1);
+		g.addEdge(20,2);
 		g.addEdge(1,3);
 		g.addEdge(2,4);
 		g.addEdge(3,5);
@@ -37,7 +37,8 @@ public class Test20_29 {
 		g.addEdge(17,18);
 		g.addEdge(18,19);
 		g.addEdge(4,19);
-		
+
+		/*
 		Evolution evolution = new Evolution(g,500);
 		Permutation permutation = new Permutation();
 		
@@ -74,10 +75,26 @@ public class Test20_29 {
 		Permutation sorted = new Permutation();
 		sorted.setPermutation(permutation_sorted);
 		sorted.setCutwidth(g.cutwidth(sorted.getPermutation()));
-		sorted.viewPermutation();		
+		sorted.viewPermutation();
+		*/
 
-		//g.info();
+		ArrayList<Integer> path = new ArrayList<>();
+        path.add(20);
+        path.add(1);
+        path.add(3);
+        path.add(5);
+        path.add(6);
+        path.add(8);
+        path.add(10);
+        path.add(16);
+        path.add(17);
+        path.add(18);
+        path.add(19);
+
+		g.info();
 		g.sorting();
-		g.outputSorting();
+		g.viewSorting();
+        g.reloadVertices();
+        GraphSaveLoad.saveGFA("graph_20_29.gfa",g,path);
 	}
 }

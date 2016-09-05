@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Test_from_paper {
 
 	public static void main(String[] args){
-		Graph g = new Graph(13,true);
+		Graph g = new Graph(13);
 		Permutation p = new Permutation();	
 
 		g.addEdge(1,2,9);
@@ -28,7 +28,7 @@ public class Test_from_paper {
 		//g.addEdge(12,12,1);
 		g.addEdge(6,0,1);
 		//g.addEdge(0,4,3);
-		g.addEdge(4,0,3);
+		//g.addEdge(4,0,3);
 
 
 		g.info();
@@ -188,6 +188,6 @@ public class Test_from_paper {
 
 		System.out.println("\nSorting with number of reversing edges: ");
 		g.sorting();
-		g.outputSorting();
+		g.viewSorting();
 	}
 }

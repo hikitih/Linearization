@@ -7,7 +7,7 @@ public class Test1B_without_edges {
 	public static void main(String[] args){
 		long startTime = System.currentTimeMillis();
 		long currTime = System.currentTimeMillis();
-		int n = 1500000;//up to 18M works. at 20M fails to add 11M edges
+		int n = 15000000;//up to 18M works. at 20M fails to add 11M edges
 
 		System.out.println("Starting the construction of the graph...");
 
@@ -18,7 +18,7 @@ public class Test1B_without_edges {
 		currTime = System.currentTimeMillis();
 
 		int nextmillion = 0;
-		
+		/*
 		for (int i=0; i<n-1; i++){
 			g.addEdge(i,i+1);
 			if ((i-nextmillion)>1000000){
@@ -27,20 +27,17 @@ public class Test1B_without_edges {
 			}
 		}
 		g.addEdge(n-1,0);
-		
+		*/
 		
 		System.out.println();
 
 		System.out.println("Vertices in graph: "+n);
 
-		//g.compactify();
-
-
 		//g.info();
 		System.out.println("Time to construct the graph: "+(System.currentTimeMillis()-startTime)/1000);
 		currTime = System.currentTimeMillis();
 		
-		g.fillSourcesAndSinks(false);
+		//g.fillSourcesAndSinks(false);
 
 		g.sorting();
 		

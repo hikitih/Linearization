@@ -6,15 +6,16 @@ import java.util.ArrayList;
 public class TestDegradation {
 
 	public static void main(String[] args){
-		int n=20;
+		int n=10;
 		Graph g = new Graph(n);
 	
 		for (int i=0; i<n-1; i++){
 			g.addEdge(i,i+1);
 		}
 
+
 		ArrayList<Integer> permutation_sorted = new ArrayList<>();
-		for (int i=0;i<100;i++){
+		for (int i=0;i<n;i++){
 			permutation_sorted.add(i);
 		}
 		Permutation sorted = new Permutation();
@@ -23,10 +24,10 @@ public class TestDegradation {
 		sorted.viewPermutation();		
 
 
-		Evolution evolution = new Evolution(g,500);
+		Evolution evolution = new Evolution(sorted,100);
 		Permutation permutation = new Permutation();
 		
-		permutation = evolution.evolute(g,500,100);
+		permutation = evolution.evolute(g,100,100);
 
 		System.out.println("RESULT ");
 		permutation.viewPermutation();
@@ -36,7 +37,7 @@ public class TestDegradation {
 		System.out.println("---> "+LtoR);		
 
 		//g.info();
-		g.sorting();
-		g.outputSorting();
+		//g.sorting();
+		//g.outputSorting();
 	}
 }

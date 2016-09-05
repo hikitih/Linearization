@@ -8,7 +8,7 @@ public class TestGFA {
     static Graph g;
     static Permutation mySorting = new Permutation();
 
-    public static void show(String filename, String sortname) {
+    public static void show(String filename) {
         g = GraphSaveLoad.loadGFA(filename, "ref");
         if (g != null) {
             System.out.println(filename);
@@ -22,6 +22,7 @@ public class TestGFA {
             mySorting.setCutwidth(g.cutWidthNew(mySorting.getPermutation()));
             mySorting.viewPermutation(true);
 
+            /*
             System.out.println("\nSorting from file: ");
             Permutation sorted = new Permutation(g.getCount());
             sorted.setPermutation(GraphSaveLoad.loadSorting(sortname));
@@ -31,15 +32,13 @@ public class TestGFA {
             System.out.println("Weight: " + g.getRightToLeftWeight());
             sorted.viewPermutation(true);
             System.out.println("\n=====================================\n");
-
+            */
         }
     }
 
     public static void main(String[] args) {
 
-        show("biographs/biograph_200_ME_0_LD_10_DU_0_InDel_32_SNP_50.gfa","biographs/biograph_200_ME_0_LD_10_DU_0_InDel_32_SNP_50.gfa.sort.txt");
-        g.info();
-        g.viewSorting(false,true);
+        show("big test data/graph 1/biograph58_30000_ME_12_LD_8_DU_3_InDel_120_SNP_500.gfa");
 
     }
 

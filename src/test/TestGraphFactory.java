@@ -12,40 +12,27 @@ public class TestGraphFactory {
     public static void main(String[] args) {
         GraphFactory graphFactory = new GraphFactory();
 
-        /*
-        graphFactory.makeBackbone(25);
-
-        graphFactory.addVariation(GraphFactory.VariationType.DELETION,10);
-        graphFactory.addVariation(GraphFactory.VariationType.DELETION,4);
-        graphFactory.addVariation(GraphFactory.VariationType.INSERTION,3);
-        graphFactory.addVariation(GraphFactory.VariationType.INSERTION,5);
-        graphFactory.addVariation(GraphFactory.VariationType.DUPLICATION,6);
-        graphFactory.addVariation(GraphFactory.VariationType.DUPLICATION,7);
-        for (int i=0; i<10; i++) {
-            graphFactory.addVariation(GraphFactory.VariationType.SNP);
-        }
-        */
-
-        int backboneLength = 1000000;
+        int backboneLength = 256000;
+        int number = 1;
         ArrayList<Integer> path = new ArrayList<>(backboneLength);
         for (int i = 1; i <= backboneLength; i++) {
             path.add(i);
         }
         graphFactory.setParameters(backboneLength,
-                8, 150, 30, 30,   //MOBILE_ELEMENT
-                80, 10, 100, 5000, //LARGE DELETION
+                64, 6, 30, 30,   //MOBILE_ELEMENT
+                64, 4, 45, 500, //LARGE DELETION
                 0, 10, 20,      //INVERSION
-                30, 100, 10000,     //DUPLICATION
-                60, 100, 2, 20,   //INSERTION
-                60, 100, 2, 20,   //SHORT DELETION
-                5, 1000);        //SNP
+                96, 3, 1000,     //DUPLICATION
+                96, 10, 2, 20,   //INSERTION
+                96, 10, 2, 20,   //SHORT DELETION
+                96, 100);        //SNP
 
         graphFactory.makeGraph(false);
         Graph g = graphFactory.getGraph();
         //g.info();
         System.out.println("Vertices in graph: "+g.getCount());
         g.sorting();
-        g.viewSorting(true, false);
+        //g.viewSorting(true, false);
         g.reloadVertices();
         Permutation p = new Permutation();
         p.setPermutation(g.getSorting());
@@ -53,9 +40,11 @@ public class TestGraphFactory {
         p.viewPermutation(true);
 
         System.out.println("Saving...");
+        //GraphSaveLoad.saveGFA("fortest"+graphFactory.getParametersString()+".gfa",g,path);
 
         //GraphSaveLoad.saveGFA("human_divided_by_thousand.gfa",g,path);
-        //GraphSaveLoad.saveGFA("biograph"+graphFactory.getParametersString()+".gfa",g,path);
+        GraphSaveLoad.saveGFA("new test data/big graphs/biograph"+number+graphFactory.getParametersString()+".gfa",g,path/*,graphFactory.getPaths()*/);
+        //System.out.println(graphFactory.getPaths().size());
 
         //GraphSaveLoad.saveSorting("biograph_sorted.txt",g.getSorting());
 

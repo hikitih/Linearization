@@ -28,7 +28,7 @@ public class TestWrongOrder {
 
         System.out.println("\nSorting with number of reversing edges: ");
         g.sorting(true,false,true,false);
-        g.outputSorting();
+        g.viewSorting();
 
         p.setPermutation(g.getSorting());
         g.reloadVertices();

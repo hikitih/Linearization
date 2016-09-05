@@ -20,7 +20,7 @@ public class TestCactus {
             System.out.println("Total vertices in graph: " + g.getCount());
 
             System.out.println("My sorting: ");
-            g.sorting(true,true,true,true);
+            g.sorting(true,true,true,false);
             g.viewSorting(true,true);
 
             p.setPermutation(g.getSorting());
@@ -41,6 +41,7 @@ public class TestCactus {
             sorted = new Permutation(g.getCount());
             sorted.setPermutation(GraphSaveLoad.loadSorting("sort_order.txt"));
 
+            /*
             System.out.println("\nOld: ");
             System.out.println(sorted.length());
             sorted.setCutwidth(g.cutWidthNew(sorted.getPermutation()));
@@ -48,6 +49,7 @@ public class TestCactus {
             System.out.println("Weight: " + g.getRightToLeftWeight());
             sorted.viewPermutation(true);
             //g.viewSorting(true,true);
+            */
 
             System.out.println("\nNew: ");
             HashSet<Integer> sortedSet = new HashSet<>(sorted.length());
