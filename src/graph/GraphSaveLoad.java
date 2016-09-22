@@ -7,11 +7,14 @@ import java.util.Random;
 
 import graph.Graph.*;
 
+/**
+ * Contains static methods to load and save graphs.
+ */
 public class GraphSaveLoad{
     private static Date date = new Date();
     private static Random random = new Random(date.getTime());
 
-    public static int refCost = 15;
+    public static int refCost = 5;
 
     public static Graph loadGraph(String filename){
 		Graph g = null;
@@ -270,10 +273,12 @@ public class GraphSaveLoad{
                 int pathNumber = 1;
                 for (ArrayList<Integer> path: paths) {
                     int counter = 1;
-                    for (Integer step : path) {
+                    Iterator<Integer> iterator = path.iterator();
+                    // (Integer step : path) {
+                    while (iterator.hasNext()){
                         StringBuffer s = new StringBuffer(1000);
                         s.append("\nP\t");
-                        s.append(step);
+                        s.append(iterator.next());
                         s.append("\tpath");
                         s.append(pathNumber);
                         s.append("\t");

@@ -2,23 +2,37 @@ package graph;
 
 import java.util.*;
 
+/**
+ * Graph designed to work with sorting. <br>
+ *
+ * Edges are static HashMap of (id, edge) <br>
+ * vertices are HashMap of (id, Node) <br> <br>
+ *
+ * Main methods are: <br>
+ * sorting = sort graph and write result to s1+s2 ArrayLists of Integer <br>
+ * info = show full info about vertices and edges <br>
+ * cutWidthNew = count cut width of permutation <br>
+ *
+ */
 public class Graph {
 	HashMap<Integer, Node> vertices;    //All vertices of the graph
-    private ArrayList<HashSet<Integer>> verticesByDegree;
-	//private Edges edges;					//All edges of the graph
-	private int nextEdgeKey = 0;            //
-	int count;                                //number of vertices
-	private ArrayList<Integer> sources;    //array of sources (assumed to be small)
-	private ArrayList<Integer> sinks;        //array of sinks (assumed to be small)
-	private ArrayList<Integer> s1, s2;        //result sorting (s2=sinks, s1=rest)
-	private int left;                        //number of unsorted vertices (to control finish)
-	private int numberOfReversingEdges = 0;    //
+    private ArrayList<HashSet<Integer>> verticesByDegree;   //put all vertices with same degree difference
+                                                            // in one HashSet with corresponding index in ArrayList
+	int count;                              //number of vertices
+    //private int nextEdgeKey = 0;
+	private ArrayList<Integer> sources;     //array of sources (assumed to be small)
+	private ArrayList<Integer> sinks;       //array of sinks (assumed to be small)
+	private ArrayList<Integer> s1, s2;      //result sorting (s2=sinks, s1=rest)
+	private int left;                       //number of unsorted vertices (left=0 used as stop-point in main procedure)
+	private int numberOfReversingEdges = 0; //
 	private int weightOfReversingEdges = 0; //
-    private int numberOfFindMaxVertex = 0;
+    private int numberOfFindMaxVertex = 0;  //
 	private int lefttoright = 0;            //number of rightward edges
 	private int righttoleft = 0;            //number of leftward edges
     private int rightToLeftWeight = 0;
-	private ArrayList<Integer> reversedEdges;
+	private ArrayList<Integer> reversedEdges;//list of all reversed edges found by sorting for further output by
+
+    private HashMap<Integer,Integer> edgeCapacity;  //for max-flow algorithm
 
 	public Graph() {
 		this(1,0,false,true);
@@ -36,6 +50,15 @@ public class Graph {
 		this(numberOfVertices, numberOfEdges, false,true);
 	}
 
+    /**
+     * Creates a graph with numbers of vertices and edges specified in params. This numbers would be enlarged
+     * automatically then new vertices and edges will be added.
+     *
+     * @param numberOfVertices number of vertices in graph
+     * @param numberOfEdges number of edges in graph
+     * @param verticesConsecutive if vertices should have (true) consecutive numbers from 1 to numberOfVertices
+     * @param newEdges if we should (true) create new edges and start their enumeration from 1 or (false) use existing edges
+     */
 	public Graph(int numberOfVertices, int numberOfEdges, boolean verticesConsecutive, boolean newEdges) {
 		if (numberOfVertices > 0) {
 			vertices = new HashMap<Integer, Node>(numberOfVertices);
@@ -106,7 +129,7 @@ public class Graph {
 			if (weight < 0) {
 				weight = 1;
 			}
-			Edges.addEdge(nextEdgeKey, out, in, weight);
+			int edgeKey = Edges.addEdge(out, in, weight);
 			if (!verticesExists) {
 				if (!vertices.containsKey(out)) {
 					Node node = new Node(out);
@@ -117,9 +140,8 @@ public class Graph {
 					vertices.put(in, node);
 				}
 			}
-			vertices.get(out).addEdge(nextEdgeKey, false, weight);
-			vertices.get(in).addEdge(nextEdgeKey, true, weight);
-			nextEdgeKey++;
+			vertices.get(out).addEdge(edgeKey, false, weight);
+			vertices.get(in).addEdge(edgeKey, true, weight);
 			return true;
 		} else return false;
 	}
@@ -130,7 +152,7 @@ public class Graph {
 		if (vertex != null) {
 			for (int key : vertex.edgeKeys) {
 				Edge edge = Edges.getEdge(key);
-				if (edge.getOtherEnd(out) == in) {
+				if (edge.getOtherEnd(out) == in && edge.isIn(in)) {
 					Edges.addWeight(key, weight);
 					vertex.changeWeight(false, weight);
 					vertices.get(in).changeWeight(true, weight);
@@ -138,8 +160,6 @@ public class Graph {
 				}
 			}
 		}
-		//System.out.println("No edge "+out+","+in);
-		//addEdge(out,in,weight);
 		return false;
 	}
 
@@ -156,6 +176,14 @@ public class Graph {
         return false;
     }
 
+    /**
+     * Creates subgraph containing only vertexNumbers vertices.
+     *
+     * Creates subgraph containing only vertexNumbers vertices. The vertex is skipped in subgraph if there is no such
+     * vertex number in graph.
+     * @param vertexNumbers id numbers of vertices of subgraph
+     * @return Graph. Edge keys and vertex numbers are the same as in original graph
+     */
     public Graph getSubGraph(HashSet<Integer> vertexNumbers){
         Graph subGraph = new Graph(vertexNumbers.size(),false);
         if (vertexNumbers.size()>0) {
@@ -196,6 +224,12 @@ public class Graph {
     }
     */
 
+    /**
+     * Add back edge keys to vertices.
+     *
+     * Sorting delete edge keys from vertices in process. This method allows us to recover all edge keys.
+     * Graph recovers all original vertices and edges after this method's end.
+     */
 	public void reloadVertices() {
 		for (Integer key : Edges.edges.keySet()) {
 			Edge edge = Edges.edges.get(key);
@@ -208,6 +242,10 @@ public class Graph {
 		}
 	}
 
+    /**
+     * Refresh count (number of vertices in graph) and left (number of unsorted vertices).
+     *
+     */
 	public void recount() {
 		count = vertices.size();
 		left = count;
@@ -219,6 +257,11 @@ public class Graph {
 		return count;
 	}
 
+    /**
+     * Number of edges in graph.
+     *
+     * @return number of edges in graph
+     */
 	public int getEdgeCount() { return Edges.edges.keySet().size(); }
 
 	public ArrayList<Integer> getSorting() {
@@ -310,6 +353,14 @@ public class Graph {
         return result;
     }
 
+    /**
+     * Count cut width of permutation of vertices.
+     *
+     * Count cut width of permutation of vertices. Id missed in graph does not affect on result. Some id from graph
+     * could be missed in permutation. Then their edges would not be count at result
+     * @param permutation permutation of vertices of the graph
+     * @return cut width
+     */
     public int cutWidthNew(ArrayList<Integer> permutation){
         rightToLeftWeight = 0;
         righttoleft = 0;
@@ -357,6 +408,15 @@ public class Graph {
         return result;
     }
 
+    @Deprecated
+    /**
+     * Please, use cutWidthNew.
+     *
+     * Old version of cut width. Please, use cutWidthNew.
+     *
+     * @param permutation
+     * @return
+     */
 	public int cutwidth(ArrayList<Integer> permutation) {
 		/*
 	    if (permutation.size() != count) {
@@ -441,6 +501,14 @@ public class Graph {
 		fillSourcesAndSinks(false);
 	}
 
+    /**
+     * Find all sources and fill verticesByDegree.
+     *
+     * Fill sources with all vertices with zero incoming degree and also fill verticesByDegrees with vertices with
+     * non-negative difference between out- and incoming weights.
+     *
+     * @param withoutSinks (true) do not touch sinks or (false) search for sink too
+     */
 	private void fillSourcesAndSinks(boolean withoutSinks) {
 		if (left > 0) {
 			for (Node vertex : vertices.values()) {
@@ -454,13 +522,19 @@ public class Graph {
 				} else if ((!withoutSinks) && (vertex.outdegree == 0)) {
 					sinks.add(vertex.id);
 				}
-				//experiments (improving perfomance)
+				//experiments (improving performance)
                 int difference = vertex.outdegree - vertex.indegree;
                 addToVerticesByDegree(vertex.id,difference);
 			}
 		}
 	}
 
+    /**
+     * Service method to simplify work with verticesByDegree.
+     *
+     * @param id id of vertex
+     * @param difference diff between out- and incoming weights
+     */
 	private void addToVerticesByDegree(int id, int difference){
         if (difference >= 0) {
             if (verticesByDegree.size() <= difference){
@@ -472,6 +546,12 @@ public class Graph {
         }
     }
 
+    /**
+     * Service method to simplify work with verticesByDegree.
+     *
+     * @param id id of vertex
+     * @param difference diff between out- and incoming weights
+     */
     private boolean removeFromVerticesByDegree(Integer id, int difference){
         if ( difference >= 0 && verticesByDegree.size() > difference &&
                 verticesByDegree.get(difference).contains(id)){
@@ -481,6 +561,7 @@ public class Graph {
         return false;
     }
 
+    @Deprecated
 	private int findMaxVertex() {
 		int max = -1;
 		int maxid = -1;
@@ -498,11 +579,23 @@ public class Graph {
 		return maxid;
 	}
 
+    /**
+     * Find vertex with max difference between out- and incoming weights
+     * @return id of such vertex
+     */
 	private int findMaxVertexNew(){
 	    int k = verticesByDegree.size() - 1;
         while (verticesByDegree.get(k)!=null && verticesByDegree.get(k).isEmpty()) {
             verticesByDegree.trimToSize();
             k--;
+            if (k<0){
+                for (Node node: vertices.values()){
+                    if (!node.isSorted()) {
+                        System.out.println(node);
+                    }
+                }
+                System.out.println("hmm");
+            }
         }
         return verticesByDegree.get(k).iterator().next();
     }
@@ -511,6 +604,19 @@ public class Graph {
 		return deleteVertex(id, true, false, true, true);
 	}
 
+    /**
+     * Delete all edges from specified vertex and recount many things.
+     *
+     * Delete all edges from specified vertex. While deleting test another end of edge for becoming a source. Otherwise
+     * recount it's difference, delete it from verticesByDegree and put back with new difference (if diff>=0).
+     *
+     * @param id id of vertex
+     * @param sourceToSink same as in sorting
+     * @param withoutSinks same as in sorting
+     * @param takeNeighbor same as in sorting
+     * @param takeAny same as in sorting
+     * @return id of neighbor source or -1 if hasn't
+     */
 	private int deleteVertex(int id, boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny) {
 		if (id < 0) {
 			return -1;
@@ -537,7 +643,10 @@ public class Graph {
 
                 //experiments (improving performance)
                 removeFromVerticesByDegree(end,vertex.outdegree-vertex.indegree);
-				vertex.deleteEdge(key);
+				if (vertex.deleteEdge(key)){
+                    System.out.println(key);
+                }
+
                 //experiments (improving performance)
                 addToVerticesByDegree(end,vertex.outdegree-vertex.indegree);
 
@@ -634,6 +743,12 @@ public class Graph {
 	}
 
 	//Service procedures to find best source/sink to go to
+
+    /**
+     * Service method to find best source to go to.
+     *
+     * @return source with min outcoming degree
+     */
 	private int getMinSource() {
 		int minid = -1;
 		int mindegree = Integer.MAX_VALUE;
@@ -651,6 +766,11 @@ public class Graph {
 		return minid;
 	}
 
+    /**
+     * Service procedures to find best sink to go to.
+     *
+     * @return sink with max incoming degree
+     */
 	private int getMaxSink() {
 		int maxid = -1;
 		int maxdegree = -1;
@@ -668,35 +788,34 @@ public class Graph {
 	}
 
 	//Main procedure
-	public void sorting() {
-		sorting(true, true, true, true);
+
+    /**
+     * Main method with default parameters.
+     */
+	public long sorting() {
+		return sorting(true, true, true, true);
 	}
 
-	/*	sourceToSink = get source first if true, get sink first if false
-		withoutSinks = true means we use only sources and s1 (sourceToSink == false means withoutSinks = false)
-		takeNeighbor = choose next vertex from neighbors of previous if possible
-		takeAny = take any neighbor/any source/sink when does have choice
-
-		default settings are true,true,true,true
-			we go from sources to sinks, using sinks when no sources available
-			and choose next vertex randomly among neighbors of previous source or sink respectively
-
-		wonderfully settings true,true,true,true
-		    give better results (at least on MHC data)
-
-		Eades, Lin, Smyth (improved Kahn) algorithm settings are true, false, false, true
-			these should also give best performance in time sense
-
-		best natural result settings are true, false, true, false
-			we go from sources to sinks, using sinks when no sources available
-			and choose next vertex with lowest outcoming from source/highest incoming from sink degree
-
-		closest to flow algorithm settings are false, false, true, false (or false, false, false, false)
-
-
-		All these settings have withoutSinks == false because there is no sense not using sinks
-		 	but you could stop using them with sourceToSink == true any time you want
-	*/
+    /**
+     * Eades, Lin, Smyth sorting of graph with some improvements.
+     *
+     * We sort all vertices of the graph to obtain best result in sense of number of reversing edges.
+     * The result sorting is put into s1 (+ s2 if we use sinks).
+     * Some improvements to original algorithm was done. Read parameters description first and next text later.
+     *
+     * Default settings are true,true,true,true
+     * We go from sources to sinks, not using sinks and choose next vertex randomly among neighbors of previous source
+     *
+     * Original Eades, Lin, Smyth (improved Kahn) algorithm settings are true, false, false, true
+     *
+     * Closest to max-flow algorithm settings are false, false, true, false (or false, false, false, false)
+     *
+     * @param sourceToSink (true) get source first or (false) get sink first
+     * @param withoutSinks (true) we use only sources and s1 (sourceToSink == false means withoutSinks = false)
+     * @param takeNeighbor (true) choose next vertex from neighbors of previous if possible
+     * @param takeAny (true )take any neighbor/any source/sink when does have choice
+     * @return time taken
+     */
 	public long sorting(boolean sourceToSink, boolean withoutSinks, boolean takeNeighbor, boolean takeAny) {
 		/*
 		System.out.println("Go from sources to sinks: " + sourceToSink + "\nDo not use sinks: " + withoutSinks
@@ -820,6 +939,16 @@ public class Graph {
 		viewSorting(printOnlyParameters, false);
 	}
 
+    /**
+     * View sort to default out (console by default).
+     *
+     * Use sorting first!!! Otherwise there would be nothing to show.
+     * View sort to default out (console by default).
+     * Print all vertices separated with comma in sorting order. Afterwards print number and weight of reversing edges.
+     * Finally print all reversing edges with their "length".
+     * @param printOnlyParameters (true) do not show sorting, only metrics or (false) show all vertices by id
+     * @param viewReversedEdges (true) show reversing edges or (false) not
+     */
 	public void viewSorting(boolean printOnlyParameters, boolean viewReversedEdges) {
 		if (!printOnlyParameters) {
 			String s = "";
@@ -850,6 +979,174 @@ public class Graph {
 		}
 	}
 
+	public void fillCapacities(){
+	    edgeCapacity = new HashMap<>();
+        for (Integer edgeKey: Edges.edges.keySet()){
+            Edge edge = Edges.getEdge(edgeKey);
+            edgeCapacity.put(edgeKey,edge.weight);
+        }
+    }
+
+	public int addFlowSourceAndSink(HashSet<Integer> backbone){
+	    addVertex(count+1);
+        addVertex(count+2);
+
+        for (Integer id: backbone) {
+            Node node = vertices.get(id);
+            boolean isSourceEdgeAdded = false;
+            int length = node.edgeKeys.size();
+            for (int i=0; i< length; i++){
+                Integer key = node.edgeKeys.get(i);
+                Edge edge = Edges.getEdge(key);
+                if (!backbone.contains(edge.getOtherEnd(id))) {
+                    if (edge.isIn(id)){
+                        //add edge from in-join node to sink
+                            addEdge(edge.getOtherEnd(id), count + 2, edge.weight, true);
+                    } else {
+                        //add edge from source to backbone node
+                        if (!isSourceEdgeAdded) {
+                            addEdge(count+1, id, 99, true);
+                            isSourceEdgeAdded = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
+
+    public ArrayList<Integer> findPathFromFlowSourceToSink(int sourceId, int sinkId){
+        ArrayList<Integer> result = new ArrayList<>();
+        ArrayList<Integer> resultEdges = new ArrayList<>();
+        HashSet<Integer> visitedEdges = new HashSet<>();
+
+        result.add(sourceId);
+        Integer currentNode = sourceId;
+        boolean getSink = false;
+        while (!getSink){
+            Node node = vertices.get(currentNode);
+            int previousNode = currentNode;
+            for (Integer key: node.edgeKeys){
+                Edge edge = Edges.getEdge(key);
+                if (!visitedEdges.contains(key) && !edge.isIn(currentNode) && edgeCapacity.get(key) > 0){
+                    currentNode = edge.getOtherEnd(currentNode);
+                    result.add(currentNode);
+                    resultEdges.add(key);
+                    visitedEdges.add(key);
+                    if (currentNode==sinkId){
+                        getSink = true;
+                    }
+                    break;
+                }
+            }
+            if (previousNode==currentNode) {
+                result.remove(result.size()-1);
+                if (resultEdges.size()>0) {
+                    resultEdges.remove(resultEdges.size() - 1);
+                }
+            }
+            if (result.size()==0) {
+                break;
+            }
+            currentNode = result.get(result.size()-1);
+        }
+
+        int minCapacity = Integer.MAX_VALUE;
+        Integer minCapacityEdge = null;
+        for (Integer edgekey: resultEdges){
+            Integer capacity = edgeCapacity.get(edgekey);
+            if (capacity < minCapacity) {
+                minCapacity = capacity;
+                minCapacityEdge = edgekey;
+            }
+        }
+        for (Integer edgekey: resultEdges){
+            Integer capacity = edgeCapacity.get(edgekey);
+            edgeCapacity.put(edgekey,capacity - minCapacity);
+        }
+
+        System.out.println(minCapacity+":"+result);
+        return result;
+    }
+
+    HashSet<Integer> visitedNodes = new HashSet<>();
+
+    /**
+     *
+     * @param id
+     * @param direction false for source, true for sink
+     */
+    private void fillVisitedNodes(Integer id, boolean direction){
+        if (!visitedNodes.contains(id)) {
+            visitedNodes.add(id);
+            Node node = vertices.get(id);
+            for (Integer edgeKey : node.edgeKeys) {
+                Edge edge = Edges.getEdge(edgeKey);
+                if (edge.isIn(id) == direction && edgeCapacity.get(edgeKey) > 0) {
+                    Integer otherEnd = edge.getOtherEnd(id);
+                    fillVisitedNodes(otherEnd, direction);
+                }
+            }
+        }
+    }
+
+    public HashSet<Integer> minimumCut(int sourceId, int sinkId){
+        HashSet<Integer> result = new HashSet<>();
+        HashSet<Integer> sourceNodes;
+        HashSet<Integer> sinkNodes;
+
+        while (findPathFromFlowSourceToSink(sourceId, sinkId).size()>0){
+        }
+
+        fillVisitedNodes(sourceId, false);
+        sourceNodes = visitedNodes;
+        visitedNodes = new HashSet<>();
+        fillVisitedNodes(sinkId, true);
+        sinkNodes = visitedNodes;
+
+        for (Integer edgeKey: Edges.edges.keySet()){
+            Edge edge = Edges.getEdge(edgeKey);
+            if (sourceNodes.contains(edge.out) && sinkNodes.contains(edge.in)){
+                result.add(edgeKey);
+            }
+        }
+
+        return result;
+    }
+
+    public void viewFlow(int sourceId, int sinkId){
+        HashSet<Integer> hs = minimumCut(sourceId,sinkId);
+        int flow = 0;
+        for (Integer edgeKey: hs){
+            Edge edge = Edges.getEdge(edgeKey);
+            flow += edge.weight;
+            System.out.println(edge);
+        }
+        System.out.println("Max flow = "+flow);
+    }
+
+    /*
+	public HashSet<Integer> minimumCut(int sourceId, int sinkId){
+	    HashSet<Integer> result = new HashSet<>();
+        ArrayList<Integer> flow = new ArrayList<>(20);
+
+        flow.add(sourceId);
+        Integer currentNode = sourceId;
+        while (true){
+            Node node = vertices.get(currentNode);
+            for (Integer key: node.edgeKeys){
+                Edge edge = Edges.getEdge(key);
+                if (!edge.isIn(currentNode)){
+
+                }
+            }
+        }
+
+        return result;
+    }
+    */
+
 	public int getNumberOfReversingEdges() {
 		return numberOfReversingEdges;
 	}
@@ -870,6 +1167,11 @@ public class Graph {
         return righttoleft;
     }
 
+    /**
+     * Full info about graph.
+     *
+     * Print description of all vertices line by line.
+     */
     public void info(){
 		for(Node vertex: vertices.values()){
 			System.out.println(vertex.toString());

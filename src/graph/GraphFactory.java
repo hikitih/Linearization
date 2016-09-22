@@ -24,7 +24,7 @@ public class GraphFactory {
         EXPONENTIAL
     }
 
-    final int referenceWeight = 15;
+    final int referenceWeight = 5;
     final int alternativeWeight = 1;
 
     Graph graph;
@@ -85,7 +85,7 @@ public class GraphFactory {
         nextNodeNumber += length;
     }
 
-    private ArrayList<Integer> getPath() {
+    public ArrayList<Integer> getPath() {
         ArrayList<Integer> result = new ArrayList<>();
         result.add(start);
         int next = start;
@@ -99,7 +99,7 @@ public class GraphFactory {
             next = Edges.getEdge(key).getOtherEnd(next);
             result.add(next);
 
-            if (result.size()>numberOfNodesInBackbone*3){
+            if (result.size() > numberOfNodesInBackbone*1.2){
                 result.clear();
                 result.add(start);
                 next = start;
@@ -134,6 +134,9 @@ public class GraphFactory {
         int end;
         int length;
         ArrayList<Integer> path = getPath();
+        if (type==VariationType.SNP || type==VariationType.INSERTION) {
+            paths.add(path);
+        }
         //ArrayList<Integer> variationPath = new ArrayList<>();
         switch (type) {
             case DELETION:
@@ -312,6 +315,39 @@ public class GraphFactory {
     private final int lengthEndOfSNPs = 1;
     private Law lawOfSNPs = Law.UNIFORM;
 
+    /**
+     * Set parameters for further graph generation
+     *
+     * We generate random path and when add variations of certain type on it. In general number of smth tells us
+     * number of paths chosen for this variation. Repeat of smth tells us number of variations of this type added
+     * on this path.
+     *
+     * @param numberOfNodesInBackbone nodes in starting linear graph named backbone
+     * @param numberOfMobileElements number of different mobile elements
+     * @param repeatOfMobileElements number of insertions of each mobile element
+     * @param lengthStartOfMobileElements minimum length of mobile element
+     * @param lengthEndOfMobileElements maximum length of mobile element
+     * @param numberOfLargeDeletions number of paths with large deletions
+     * @param repeatOfLargeDeletions number of large deletions per path
+     * @param lengthStartOfLargeDeletions minimum length of large deletions
+     * @param lengthEndOfLargeDeletions maximum length of large deletions
+     * @param numberOfInversions not used
+     * @param lengthStartOfInversions not used
+     * @param lengthEndOfInversions not used
+     * @param numberOfDuplications number of duplications. No repeat value! One duplication per path.
+     * @param lengthStartOfDuplications minimum length of duplication
+     * @param lengthEndOfDuplications maximum length of duplication
+     * @param numberOfInsertions number of short insertions paths
+     * @param repeatOfInsertions number of short insertions per path
+     * @param lengthStartOfInsertions minimum length of short insertion
+     * @param lengthEndOfInsertions maximum length of short insertion
+     * @param numberOfShortDeletions number of short deletions paths
+     * @param repeatOfShortDeletions number of short deletions per path
+     * @param lengthStartOfShortDeletions minimum length of short deletion
+     * @param lengthEndOfShortDeletions maximum length of short deletion
+     * @param numberOfSNPs number of SNP paths
+     * @param repeatOfSNPs number of SNPs per path
+     */
     public void setParameters(int numberOfNodesInBackbone,
                               int numberOfMobileElements, int repeatOfMobileElements, int lengthStartOfMobileElements, int lengthEndOfMobileElements,
                               int numberOfLargeDeletions, int repeatOfLargeDeletions, int lengthStartOfLargeDeletions, int lengthEndOfLargeDeletions,
@@ -347,6 +383,13 @@ public class GraphFactory {
         this.repeatOfSNPs = repeatOfSNPs;
     }
 
+    /**
+     * Short description of variation numbers.
+     *
+     * Used for file naming.
+     *
+     * @return String with numbers of variations by type
+     */
     public String getParametersString() {
         return "_" + numberOfNodesInBackbone +
                 "_ME_" + numberOfMobileElements*repeatOfMobileElements +
@@ -360,8 +403,16 @@ public class GraphFactory {
         makeGraph(false);
     }
 
+    /**
+     * Create graph with variations specified by setParameters method.
+     *
+     * Or by default if no setParameters was called.
+     *
+     * @param showVariations (true) print variation nodes with adjacent path nodes for every variation added or (false) not
+     */
     public void makeGraph(boolean showVariations) {
         this.showVariations = showVariations;
+        paths.clear();
         long startTime = System.currentTimeMillis();
         makeBackbone(numberOfNodesInBackbone);
         //MOBILE_ELEMENT
@@ -387,17 +438,17 @@ public class GraphFactory {
                 lawOfDuplications, lengthStartOfDuplications, lengthEndOfDuplications,
                 numberOfDuplications);
         System.out.println("DUPLICATION finished");
-        //INSERTION
-        for (int i = 0; i < numberOfInsertions; i++) {
-            addVariations(VariationType.INSERTION,
-                    lawOfInsertions, lengthStartOfInsertions, lengthEndOfInsertions,
-                    repeatOfInsertions);
-        }
         //DELETION
         for (int i = 0; i < numberOfShortDeletions; i++) {
             addVariations(VariationType.DELETION,
                     lawOfShortDeletions, lengthStartOfShortDeletions, lengthEndOfShortDeletions,
                     repeatOfShortDeletions);
+        }
+        //INSERTION
+        for (int i = 0; i < numberOfInsertions; i++) {
+            addVariations(VariationType.INSERTION,
+                    lawOfInsertions, lengthStartOfInsertions, lengthEndOfInsertions,
+                    repeatOfInsertions);
         }
         System.out.println("INDEL finished");
         //SNP

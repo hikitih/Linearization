@@ -4,6 +4,14 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Date;
 
+/**
+ * Permutation of graph vertices
+ *
+ * <br><br> permutation = ArrayList of Integer with permutation id
+ * <br> cutwidth = cut width
+ * <br> cutwidthAverage = average cut width, counts automatically when changing cut width
+ *
+ */
 public class Permutation implements Comparable<Permutation>{
 	private ArrayList<Integer> permutation;
 	private int cutwidth = 0;
@@ -65,6 +73,13 @@ public class Permutation implements Comparable<Permutation>{
 		return permutation;
 	}
 
+	/**
+	 * Set cut width value.
+	 *
+	 * You should get this value by using Graph.cutWidthNew on this permutation received by getPermutation.
+	 *
+	 * @param cutwidth cut width for this permutation from some Graph
+	 */
 	public void setCutwidth(int cutwidth){
 		this.cutwidth = cutwidth;
 		if (permutation.size()>1) {
@@ -82,10 +97,6 @@ public class Permutation implements Comparable<Permutation>{
 		return permutation.size();
 	}
 
-	public void viewPermutation(){
-		viewPermutation(false);
-	}
-
 	@Override
 	public String toString(){
 		String s="";
@@ -96,6 +107,17 @@ public class Permutation implements Comparable<Permutation>{
 		return s;	
 	}
 
+	public void viewPermutation(){
+		viewPermutation(false);
+	}
+
+	/**
+	 * View permutation.
+	 *
+	 * To look at result of sorting or control process.
+	 *
+	 * @param onlyCutwidth (true) write only cut width and average cut width values
+	 */
 	public void viewPermutation(boolean onlyCutwidth){
 		String s="";
 		if (!onlyCutwidth){
@@ -107,6 +129,12 @@ public class Permutation implements Comparable<Permutation>{
 		System.out.printf(s+"%2.3f"+"\n",cutwidthAverage);
 	}
 
+	/**
+	 * Change position of two id in permutation.
+	 *
+	 * Specially for Evolution.
+	 * @param plus seed for random number generator (using current time is kinda of OK)
+	 */
 	public void randomSwap(long plus){
 		Date date = new Date();
 		Random random = new Random(date.getTime()+plus);
