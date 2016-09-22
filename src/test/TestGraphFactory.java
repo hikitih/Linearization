@@ -12,38 +12,85 @@ public class TestGraphFactory {
     public static void main(String[] args) {
         GraphFactory graphFactory = new GraphFactory();
 
-        int backboneLength = 256000;
-        int number = 1;
+        int backboneLength = 30;
+        int number = 1; //100
         ArrayList<Integer> path = new ArrayList<>(backboneLength);
         for (int i = 1; i <= backboneLength; i++) {
             path.add(i);
         }
         graphFactory.setParameters(backboneLength,
-                64, 6, 30, 30,   //MOBILE_ELEMENT
-                64, 4, 45, 500, //LARGE DELETION
+                0, 4, 30, 30,   //MOBILE_ELEMENT
+                0, 4, 30, 100, //LARGE DELETION
                 0, 10, 20,      //INVERSION
-                96, 3, 1000,     //DUPLICATION
-                96, 10, 2, 20,   //INSERTION
-                96, 10, 2, 20,   //SHORT DELETION
-                96, 100);        //SNP
+                2, 3, 10,     //DUPLICATION
+                3, 1, 2, 5,   //INSERTION
+                3, 1, 2, 5,   //SHORT DELETION
+                5, 2);        //SNP
 
-        graphFactory.makeGraph(false);
-        Graph g = graphFactory.getGraph();
         //g.info();
-        System.out.println("Vertices in graph: "+g.getCount());
-        g.sorting();
-        //g.viewSorting(true, false);
-        g.reloadVertices();
-        Permutation p = new Permutation();
-        p.setPermutation(g.getSorting());
-        p.setCutwidth(g.cutWidthNew(p.getPermutation()));
-        p.viewPermutation(true);
+        int feedbackArcs1 = 0;
+        double cutwidth1 = 0d;
+        int feedbackArcs2 = 0;
+        double cutwidth2 = 0d;
+        for (int i=0; i<number; i++) {
+            graphFactory.makeGraph(false);
+            Graph g = graphFactory.getGraph();
+            System.out.println("Vertices in graph: " + g.getCount());
+            g.sorting();
 
-        System.out.println("Saving...");
+            feedbackArcs1 += g.getNumberOfReversingEdges();
+
+
+            g.viewSorting(true, false);
+            g.reloadVertices();
+            Permutation p = new Permutation();
+            p.setPermutation(g.getSorting());
+            p.setCutwidth(g.cutWidthNew(p.getPermutation()));
+            p.viewPermutation(true);
+
+            cutwidth1 += p.getCutwidthAverage();
+
+            System.out.println("Saving...");
+            System.out.println("Paths: " + graphFactory.getPaths().size());
+            //GraphSaveLoad.saveGFA("new test data/with paths/for_stas/biograph" + i + graphFactory.getParametersString() + ".gfa", g, path, graphFactory.getPaths());
+            GraphSaveLoad.saveGFA("new test data/with paths/for_stas/with_paths_2" + graphFactory.getParametersString() + ".gfa", g, path, graphFactory.getPaths());
+            GraphSaveLoad.saveGFA("new test data/with paths/for_stas/reference_only_2" + graphFactory.getParametersString() + ".gfa", g, path/*, graphFactory.getPaths()*/);
+
+            Graph loaded = GraphSaveLoad.loadGFA("new test data/with paths/for_stas/with_paths_2" + graphFactory.getParametersString() + ".gfa", "ref");
+
+            loaded.sorting();
+            feedbackArcs2 += loaded.getNumberOfReversingEdges();
+
+
+            loaded.viewSorting(true, false);
+            loaded.reloadVertices();
+            p.setPermutation(loaded.getSorting());
+            p.setCutwidth(loaded.cutWidthNew(p.getPermutation()));
+            p.viewPermutation(true);
+
+            cutwidth2 += p.getCutwidthAverage();
+
+
+            loaded = GraphSaveLoad.loadGFA("new test data/with paths/for_stas/reference_only_2" + graphFactory.getParametersString() + ".gfa", "ref");
+            loaded.sorting();
+            loaded.viewSorting(true, false);
+            loaded.reloadVertices();
+            p.setPermutation(loaded.getSorting());
+            p.setCutwidth(loaded.cutWidthNew(p.getPermutation()));
+            p.viewPermutation(true);
+            cutwidth1 = p.getCutwidthAverage();
+            feedbackArcs1 = loaded.getNumberOfReversingEdges();
+
+
+            //loaded.info();
+        }
+
+        System.out.println(feedbackArcs1/number + " vs " + feedbackArcs2/number);
+        System.out.println(cutwidth1/number + " vs " + cutwidth2/number);
+
         //GraphSaveLoad.saveGFA("fortest"+graphFactory.getParametersString()+".gfa",g,path);
 
         //GraphSaveLoad.saveGFA("human_divided_by_thousand.gfa",g,path);
-        GraphSaveLoad.saveGFA("new test data/big graphs/biograph"+number+graphFactory.getParametersString()+".gfa",g,path/*,graphFactory.getPaths()*/);
         //System.out.println(graphFactory.getPaths().size());
 
         //GraphSaveLoad.saveSorting("biograph_sorted.txt",g.getSorting());
